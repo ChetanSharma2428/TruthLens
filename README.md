@@ -106,3 +106,42 @@ npm run dev
 - **Public Feed & Landing:** `http://localhost:5173`
 - **Reviewer Access:** Click "Reviewer" on the landing page or visit `http://localhost:5173/reviewer/access`
 - **Reviewer Demo Code:** `TRUTHLENS-DEMO-2026`
+
+---
+
+## 3–4 Minute Hackathon Evaluation Demo Walkthrough
+
+1. **Landing Page (`/`):**
+   - Open `http://localhost:5173`.
+   - Inspect the editorial mission statement, the 3-step workflow (Submit → Triage → Review), and the deterministic risk signal definitions.
+   - Click **Get Started** to enter the public feed.
+
+2. **Public Claims Feed (`/feed`):**
+   - Note the **Newest First** default sort order (DP1).
+   - Observe that unverified claims are transparently displayed with a prominent `UNVERIFIED` badge (DP2).
+   - Test independent filtering: select **Category = Finance** or **Status = False**.
+   - Notice how sorting remains independent from filtering.
+
+3. **Submit a Claim (`/submit`):**
+   - Enter a viral claim: `"BREAKING!!! SHOCKING EMERGENCY LOCKDOWN ON ALL ACCOUNTS! SHARE BEFORE DELETED!"`
+   - Select Platform = **WhatsApp**, Category = **Finance**, leave Source URL empty.
+   - Click **Submit Claim**.
+   - Observe instant deterministic triage: **HIGH RISK** (Sensational + Shouting + Unsourced).
+   - Note that initial status is strictly **UNVERIFIED**.
+
+4. **Reviewer Access (`/reviewer/access`):**
+   - Navigate to Reviewer Workspace.
+   - Enter invalid code to demonstrate rejection.
+   - Enter demo reviewer code: `TRUTHLENS-DEMO-2026`.
+   - Observe secure server validation and establishment of HTTP-only session cookie.
+
+5. **Reviewer Dashboard (`/reviewer/dashboard`):**
+   - View pending review queue showing all unverified submissions.
+   - Click **Review Claim** on the submitted claim.
+   - Inspect the 3-part layout: (1) Exact Submitted Content, (2) Automated Risk Heuristics, (3) Human Reviewer Verdict.
+   - Select **Verdict = FALSE** and enter explanation: `"Official regulatory authorities and Central Bank confirmed normal operations. No lockdown exists."`
+   - Click **Submit Verification Verdict**.
+
+6. **Audit & Transparency (`/claims/:id` & `/feed`):**
+   - Return to the Public Feed: verify the claim is now marked **FALSE**.
+   - Click **View Details**: inspect the complete immutable record (DP3), including the reviewer note, original platform, risk flags, and verification timestamp.
