@@ -1,0 +1,204 @@
+.tl-review-panel {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-dark);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-editorial);
+  display: flex;
+  flex-direction: column;
+}
+
+.tl-panel-header {
+  padding: var(--space-6);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  background-color: var(--bg-page);
+}
+
+.tl-panel-kicker {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: var(--space-1);
+}
+
+.tl-panel-title {
+  font-family: var(--font-serif);
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.tl-panel-close-btn {
+  font-size: 1.125rem;
+  color: var(--text-muted);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.tl-panel-close-btn:hover {
+  color: var(--text-primary);
+}
+
+.tl-panel-body {
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.tl-panel-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-bottom: var(--space-6);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.tl-panel-section:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.tl-section-heading {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+}
+
+.tl-panel-claim-quote {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--text-primary);
+  background-color: var(--bg-subtle);
+  border-left: 3px solid var(--border-dark);
+  padding: var(--space-3) var(--space-4);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  margin: 0;
+}
+
+.tl-panel-claim-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+.tl-panel-source-line a {
+  color: var(--color-accent);
+}
+
+.tl-risk-reminder {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* Verdict Selector */
+.tl-verdict-selector {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.tl-verdict-option {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.tl-verdict-radio-mark {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid var(--border-strong);
+  border-radius: 50%;
+  margin-top: 0.125rem;
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+}
+
+.tl-verdict-option-label {
+  font-weight: 700;
+  font-size: 0.9375rem;
+  margin-bottom: 0.125rem;
+}
+
+.tl-verdict-option-desc {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+/* Choice Active Styles */
+.tl-choice-true.tl-verdict-option-active {
+  border-color: #059669;
+  background-color: var(--status-true-bg);
+}
+.tl-choice-true.tl-verdict-option-active .tl-verdict-radio-mark {
+  border-color: #059669;
+  background-color: #059669;
+}
+.tl-choice-true.tl-verdict-option-active .tl-verdict-option-label {
+  color: var(--status-true-text);
+}
+
+.tl-choice-false.tl-verdict-option-active {
+  border-color: #dc2626;
+  background-color: var(--status-false-bg);
+}
+.tl-choice-false.tl-verdict-option-active .tl-verdict-radio-mark {
+  border-color: #dc2626;
+  background-color: #dc2626;
+}
+.tl-choice-false.tl-verdict-option-active .tl-verdict-option-label {
+  color: var(--status-false-text);
+}
+
+.tl-choice-misleading.tl-verdict-option-active {
+  border-color: #d97706;
+  background-color: var(--status-misleading-bg);
+}
+.tl-choice-misleading.tl-verdict-option-active .tl-verdict-radio-mark {
+  border-color: #d97706;
+  background-color: #d97706;
+}
+.tl-choice-misleading.tl-verdict-option-active .tl-verdict-option-label {
+  color: var(--status-misleading-text);
+}
+
+.tl-panel-error {
+  background-color: var(--status-false-bg);
+  border: 1px solid var(--status-false-border);
+  color: var(--status-false-text);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+}
+
+.tl-panel-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-top: var(--space-2);
+}
+
+.tl-submit-verdict-btn {
+  flex: 1;
+}

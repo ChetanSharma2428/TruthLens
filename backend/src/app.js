@@ -6,6 +6,7 @@ import rateLimit from 'express-rate-limit';
 import { env } from './config/env.js';
 import claimRoutes from './routes/claimRoutes.js';
 import reviewerRoutes from './routes/reviewerRoutes.js';
+import reviewRoutes from './routes/reviewRoutes.js';
 import { notFoundHandler, errorHandler } from './middleware/errorMiddleware.js';
 
 const app = express();
@@ -59,6 +60,7 @@ app.get('/api/health', (req, res) => {
 // Mounted API Routes
 app.use('/api/claims', claimRoutes);
 app.use('/api/reviewer', reviewerRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 // 404 & Central Error Handling
 app.use(notFoundHandler);
