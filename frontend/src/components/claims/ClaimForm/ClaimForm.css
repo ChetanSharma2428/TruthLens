@@ -194,3 +194,52 @@
   gap: var(--space-3);
   justify-content: center;
 }
+
+/* Advisory Suggestion UI */
+.tl-suggest-category-btn {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--color-accent);
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: color var(--transition-fast);
+}
+
+.tl-suggest-category-btn:hover:not(:disabled) {
+  color: var(--color-brand);
+  text-decoration: underline;
+}
+
+.tl-category-suggestion-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-default);
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  margin-top: var(--space-1);
+}
+
+.tl-suggestion-kicker {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.tl-suggestion-value {
+  font-weight: 700;
+  color: var(--color-brand);
+}
+
+.tl-apply-suggestion-btn {
+  font-size: 0.6875rem;
+  font-family: var(--font-mono);
+  color: var(--color-accent);
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+}

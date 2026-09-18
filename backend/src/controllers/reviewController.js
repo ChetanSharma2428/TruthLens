@@ -27,3 +27,20 @@ export const handleSubmitReview = asyncHandler(async (req, res) => {
     data: updatedClaim
   });
 });
+
+export const handleResearchAssistance = asyncHandler(async (req, res) => {
+  const { claimId } = req.params;
+  const { getClaimById } = await import('../services/claimService.js');
+  const { generateResearchAssistance } = await import('../services/aiService.js');
+
+  const claim = await getClaimById(claimId);
+  const assistance = generateResearchAssistance(claim);
+
+  res.status(200).json({
+    success: true,
+    data: {
+      claimId,
+      assistance
+    }
+  });
+});

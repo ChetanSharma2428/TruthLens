@@ -24,3 +24,8 @@ export async function submitClaimReview(claimId, { verdict, note }) {
   const response = await api.post(`/reviews/${claimId}`, { verdict, note });
   return response.data.data;
 }
+
+export async function fetchResearchAssistance(claimId) {
+  const response = await api.get(`/reviews/${claimId}/research-assistance`);
+  return response.data.data;
+}

@@ -35,3 +35,14 @@ export const handleGetClaimById = asyncHandler(async (req, res) => {
     data: claim
   });
 });
+
+export const handleSuggestCategory = asyncHandler(async (req, res) => {
+  const { text } = req.body;
+  const { suggestCategory } = await import('../services/aiService.js');
+  const suggestion = suggestCategory(text || '');
+
+  res.status(200).json({
+    success: true,
+    data: suggestion
+  });
+});

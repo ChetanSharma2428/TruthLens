@@ -1,7 +1,8 @@
 import express from 'express';
 import {
   handleGetPendingReviews,
-  handleSubmitReview
+  handleSubmitReview,
+  handleResearchAssistance
 } from '../controllers/reviewController.js';
 import { requireReviewer } from '../middleware/reviewerMiddleware.js';
 import { validateSubmitReview } from '../validators/reviewValidator.js';
@@ -12,6 +13,7 @@ const router = express.Router();
 router.use(requireReviewer);
 
 router.get('/pending', handleGetPendingReviews);
+router.get('/:claimId/research-assistance', handleResearchAssistance);
 router.post('/:claimId', validateSubmitReview, handleSubmitReview);
 
 export default router;

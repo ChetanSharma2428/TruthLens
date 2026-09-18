@@ -2,11 +2,14 @@ import express from 'express';
 import {
   handleCreateClaim,
   handleGetClaims,
-  handleGetClaimById
+  handleGetClaimById,
+  handleSuggestCategory
 } from '../controllers/claimController.js';
 import { validateCreateClaim } from '../validators/claimValidator.js';
 
 const router = express.Router();
+
+router.post('/suggest-category', handleSuggestCategory);
 
 router.route('/')
   .post(validateCreateClaim, handleCreateClaim)

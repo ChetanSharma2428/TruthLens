@@ -27,3 +27,8 @@ export async function submitClaim(claimData) {
   const response = await api.post('/claims', claimData);
   return response.data.data;
 }
+
+export async function suggestClaimCategory(text) {
+  const response = await api.post('/claims/suggest-category', { text });
+  return response.data.data;
+}

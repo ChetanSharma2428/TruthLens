@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import Button from '../../common/Button/Button';
 import RiskFlags from '../RiskFlags/RiskFlags';
 import StatusBadge from '../StatusBadge/StatusBadge';
-import { submitClaim } from '../../../services/claimService';
+import { submitClaim, suggestClaimCategory } from '../../../services/claimService';
 import './ClaimForm.css';
 
 export default function ClaimForm() {
@@ -18,6 +18,8 @@ export default function ClaimForm() {
   const [submitting, setSubmitting] = useState(false);
   const [apiError, setApiError] = useState(null);
   const [createdClaim, setCreatedClaim] = useState(null);
+  const [suggestingCategory, setSuggestingCategory] = useState(false);
+  const [categorySuggestion, setCategorySuggestion] = useState(null);
 
   const validate = () => {
     const errs = {};
@@ -173,9 +175,31 @@ export default function ClaimForm() {
 
         {/* Category */}
         <div className="tl-form-group">
-          <label htmlFor="claim-category" className="tl-form-label">
-            Category <span className="tl-required">*</span>
-          </label>
+          <div className="tl-label-row">
+            <label htmlFor="claim-category" className="tl-form-label">
+              Category <span className="tl-required">*</span>
+            </label>
+            {formData.text.trim().length >= 5 && (
+              <button
+                type="button"
+                className="tl-suggest-category-btn"
+                onClick={async () => {
+                  try {
+                    setSuggestingCategory(true);
+                    const res = await suggestClaimCategory(formData.text);
+                    setCategorySuggestion(res);
+                  } catch {
+                    // Ignore suggestion failure, optional feature
+                  } finally {
+                    setSuggestingCategory(false);
+                  }
+                }}
+                disabled={suggestingCategory}
+              >
+                {suggestingCategory ? 'Analyzing...' : '✦ Suggest Category'}
+              </button>
+            )}
+          </div>
           <select
             id="claim-category"
             className="tl-form-select"
@@ -188,6 +212,23 @@ export default function ClaimForm() {
             <option value="FINANCE">Finance</option>
             <option value="OTHER">Other</option>
           </select>
+
+          {categorySuggestion && (
+            <div className="tl-category-suggestion-pill">
+              <span className="tl-suggestion-kicker">ADVISORY SUGGESTION:</span>
+              <span className="tl-suggestion-value">{categorySuggestion.suggestedCategory}</span>
+              <button
+                type="button"
+                className="tl-apply-suggestion-btn"
+                onClick={() => {
+                  setFormData({ ...formData, category: categorySuggestion.suggestedCategory });
+                  setCategorySuggestion(null);
+                }}
+              >
+                Apply
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
