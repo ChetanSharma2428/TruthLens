@@ -116,5 +116,40 @@ describe('Risk Engine — Deterministic Unit Tests', () => {
       assert.equal(result.flags.length, 3);
       assert.equal(result.riskLevel, RISK_LEVELS.HIGH);
     });
+
+    it('provides structured metrics breakdown in analysis output', () => {
+      const result = analyzeRisk({
+        text: 'BREAKING news alert with lots of SHOUTING HERE',
+        sourceUrl: null
+      });
+
+      assert.ok(result.metrics);
+      assert.ok(result.metrics.detectedKeywords.includes('breaking'));
+      assert.ok(typeof result.metrics.uppercaseRatio === 'number');
+      assert.ok(typeof result.metrics.uppercasePercent === 'number');
+      assert.equal(result.metrics.hasSource, false);
+      assert.equal(result.metrics.riskScore, result.flags.length);
+    });
+  });
+
+  describe('Feature 2 Modern Architecture: Caching with Redis / Memory Fallback', () => {
+    it('caches risk evaluation results transparently', async () => {
+      const { analyzeRiskWithCache } = await import('../src/services/riskAnalyzer.js');
+      const input = {
+        text: 'BREAKING: Urgent update share before deleted immediately!',
+        sourceUrl: null
+      };
+
+      const firstRun = await analyzeRiskWithCache(input);
+      assert.equal(firstRun.fromCache, false);
+      assert.equal(firstRun.riskLevel, RISK_LEVELS.HIGH);
+
+      // Second run should return identical result marked as cached
+      const secondRun = await analyzeRiskWithCache(input);
+      assert.equal(secondRun.fromCache, true);
+      assert.deepEqual(secondRun.flags, firstRun.flags);
+      assert.equal(secondRun.riskLevel, firstRun.riskLevel);
+      assert.deepEqual(secondRun.metrics, firstRun.metrics);
+    });
   });
 });

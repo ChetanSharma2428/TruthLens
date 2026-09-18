@@ -60,6 +60,16 @@ const claimSchema = new mongoose.Schema(
       enum: RISK_LEVELS,
       default: 'NORMAL'
     },
+    riskMetrics: {
+      type: {
+        uppercaseRatio: { type: Number, default: 0 },
+        uppercasePercent: { type: Number, default: 0 },
+        detectedKeywords: { type: [String], default: [] },
+        hasSource: { type: Boolean, default: false },
+        riskScore: { type: Number, default: 0 }
+      },
+      default: undefined
+    },
     status: {
       type: String,
       enum: STATUSES,

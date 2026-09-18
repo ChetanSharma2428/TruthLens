@@ -6,6 +6,7 @@ import {
   handleGetClaimById,
   handleSuggestCategory,
   handleCheckDuplicate,
+  handleAnalyzeRisk,
   handleExtractFromImage
 } from '../controllers/claimController.js';
 import { validateCreateClaim } from '../validators/claimValidator.js';
@@ -26,9 +27,10 @@ const upload = multer({
   }
 });
 
-// Feature 1 Enhancements
+// Feature 1 & 2 Enhancements
 router.post('/suggest-category', handleSuggestCategory);
 router.post('/check-duplicate', handleCheckDuplicate);
+router.post('/analyze-risk', handleAnalyzeRisk);
 router.post('/extract-from-image', upload.single('screenshot'), handleExtractFromImage);
 
 // Core CRUD Endpoints

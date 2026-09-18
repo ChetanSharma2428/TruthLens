@@ -15,8 +15,8 @@ import { AppError } from '../utils/AppError.js';
  * @returns {Promise<Object>} The created claim document
  */
 export async function createClaim({ text, platform, category, sourceUrl, imageUrl = null }) {
-  // Execute deterministic risk analysis
-  const { flags, riskLevel } = analyzeRisk({ text, sourceUrl });
+  // Execute deterministic risk analysis with detailed metrics
+  const { flags, riskLevel, metrics } = analyzeRisk({ text, sourceUrl });
 
   const claim = await Claim.create({
     text,
@@ -26,6 +26,7 @@ export async function createClaim({ text, platform, category, sourceUrl, imageUr
     imageUrl,
     flags,
     riskLevel,
+    riskMetrics: metrics,
     status: 'UNVERIFIED',
     reviewerNote: null,
     reviewerSessionId: null,

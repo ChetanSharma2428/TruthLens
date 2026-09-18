@@ -90,7 +90,13 @@ export default function ClaimDetailPage() {
                     <span className="tl-record-id">AUDIT RECORD #{claim.id.slice(-6).toUpperCase()}</span>
                     <StatusBadge status={claim.status} size="md" />
                   </div>
-                  <RiskFlags flags={claim.flags} riskLevel={claim.riskLevel} size="md" />
+                  <RiskFlags
+                    flags={claim.flags}
+                    riskLevel={claim.riskLevel}
+                    metrics={claim.riskMetrics}
+                    size="md"
+                    interactive={true}
+                  />
                 </div>
 
                 <h1 className="tl-detail-claim-text">"{claim.text}"</h1>
@@ -154,6 +160,16 @@ export default function ClaimDetailPage() {
                           <span className="tl-flag-indicator">Active</span>
                         </div>
                         <p className="tl-flag-explanation">{getFlagExplanation(flag)}</p>
+                        {flag === 'SHOUTING' && claim.riskMetrics?.uppercasePercent !== undefined && (
+                          <div className="tl-flag-metric-pill">
+                            Measured: <strong>{claim.riskMetrics.uppercasePercent}%</strong> uppercase (&gt;50% threshold)
+                          </div>
+                        )}
+                        {flag === 'SENSATIONAL' && claim.riskMetrics?.detectedKeywords?.length > 0 && (
+                          <div className="tl-flag-metric-pill">
+                            Detected triggers: <strong>{claim.riskMetrics.detectedKeywords.join(', ')}</strong>
+                          </div>
+                        )}
                       </div>
                     ))
                   )}

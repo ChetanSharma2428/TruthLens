@@ -12,5 +12,6 @@ export const env = {
   CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME || null,
   CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY || null,
   CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET || null,
+  REDIS_URL: process.env.REDIS_URL || null,
   isProduction: process.env.NODE_ENV === 'production'
 };

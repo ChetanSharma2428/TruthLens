@@ -35,7 +35,12 @@ export default function ClaimCard({ claim }) {
   return (
     <article className="tl-claim-card" aria-labelledby={`claim-${claim.id}`}>
       <div className="tl-card-header">
-        <RiskFlags flags={claim.flags} riskLevel={claim.riskLevel} />
+        <RiskFlags
+          flags={claim.flags}
+          riskLevel={claim.riskLevel}
+          metrics={claim.riskMetrics}
+          interactive={true}
+        />
         <StatusBadge status={claim.status} size="sm" />
       </div>
 

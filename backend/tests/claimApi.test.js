@@ -119,4 +119,26 @@ describe('Claim APIs — Integration Tests', () => {
     assert.equal(body.success, false);
     assert.equal(body.error.code, 'INVALID_ID');
   });
+
+  it('POST /api/claims/analyze-risk returns cached deterministic risk analysis with metrics', async () => {
+    const payload = {
+      text: 'BREAKING SHOCKING CONSPIRACY EXPOSED! SHARE BEFORE DELETED!',
+      sourceUrl: null
+    };
+
+    const res = await fetch(`${baseUrl}/analyze-risk`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.equal(body.success, true);
+    assert.equal(body.data.riskLevel, 'HIGH');
+    assert.equal(body.data.flags.length, 3);
+    assert.ok(body.data.metrics);
+    assert.equal(body.data.metrics.riskScore, 3);
+    assert.ok(body.data.metrics.detectedKeywords.length >= 2);
+  });
 });

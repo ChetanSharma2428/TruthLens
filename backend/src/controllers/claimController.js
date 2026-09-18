@@ -58,6 +58,17 @@ export const handleCheckDuplicate = asyncHandler(async (req, res) => {
   });
 });
 
+export const handleAnalyzeRisk = asyncHandler(async (req, res) => {
+  const { text, sourceUrl } = req.body;
+  const { analyzeRiskWithCache } = await import('../services/riskAnalyzer.js');
+  const analysis = await analyzeRiskWithCache({ text: text || '', sourceUrl: sourceUrl || null });
+
+  res.status(200).json({
+    success: true,
+    data: analysis
+  });
+});
+
 export const handleExtractFromImage = asyncHandler(async (req, res) => {
   if (!req.file) {
     const { AppError } = await import('../utils/AppError.js');
