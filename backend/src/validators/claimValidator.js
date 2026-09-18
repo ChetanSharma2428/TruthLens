@@ -2,7 +2,7 @@ import { AppError } from '../utils/AppError.js';
 import { PLATFORMS, CATEGORIES } from '../models/Claim.js';
 
 export function validateCreateClaim(req, res, next) {
-  const { text, platform, category, sourceUrl } = req.body;
+  const { text, platform, category, sourceUrl, imageUrl } = req.body;
 
   // Text validation
   if (!text || typeof text !== 'string') {
@@ -58,12 +58,19 @@ export function validateCreateClaim(req, res, next) {
     }
   }
 
+  // Optional Image URL validation (from OCR upload)
+  let cleanImageUrl = null;
+  if (imageUrl && typeof imageUrl === 'string') {
+    cleanImageUrl = imageUrl.trim();
+  }
+
   // Authoritative sanitization: only pass sanitized whitelisted fields
   req.sanitizedClaim = {
     text: trimmedText,
     platform: platform.toUpperCase(),
     category: category.toUpperCase(),
-    sourceUrl: cleanSourceUrl
+    sourceUrl: cleanSourceUrl,
+    imageUrl: cleanImageUrl
   };
 
   next();

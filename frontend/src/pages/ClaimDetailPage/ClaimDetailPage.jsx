@@ -184,6 +184,16 @@ export default function ClaimDetailPage() {
                       )}
                     </dd>
                   </div>
+                  {claim.imageUrl && (
+                    <div className="tl-meta-row tl-meta-image-row">
+                      <dt>Attached Screenshot:</dt>
+                      <dd>
+                        <a href={claim.imageUrl} target="_blank" rel="noopener noreferrer">
+                          <img src={claim.imageUrl} alt="Attached viral screenshot" className="tl-detail-screenshot-thumb" />
+                        </a>
+                      </dd>
+                    </div>
+                  )}
                   <div className="tl-meta-row">
                     <dt>Submitted At:</dt>
                     <dd>{formatDate(claim.submittedAt)}</dd>

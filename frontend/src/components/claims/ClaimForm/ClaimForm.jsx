@@ -1,9 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import Button from '../../common/Button/Button';
 import RiskFlags from '../RiskFlags/RiskFlags';
 import StatusBadge from '../StatusBadge/StatusBadge';
-import { submitClaim, suggestClaimCategory } from '../../../services/claimService';
+import {
+  submitClaim,
+  suggestClaimCategory,
+  checkDuplicateClaim,
+  extractClaimFromImage
+} from '../../../services/claimService';
 import './ClaimForm.css';
 
 export default function ClaimForm() {
@@ -11,15 +16,119 @@ export default function ClaimForm() {
     text: '',
     platform: 'WHATSAPP',
     category: 'POLITICS',
-    sourceUrl: ''
+    sourceUrl: '',
+    imageUrl: null
   });
 
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [apiError, setApiError] = useState(null);
   const [createdClaim, setCreatedClaim] = useState(null);
+
+  // AI & Feature 1 Enhancement States
   const [suggestingCategory, setSuggestingCategory] = useState(false);
   const [categorySuggestion, setCategorySuggestion] = useState(null);
+
+  // OCR Screenshot State
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [ocrStatus, setOcrStatus] = useState(null);
+  const fileInputRef = useRef(null);
+
+  // Duplicate Detection State
+  const [duplicateCheck, setDuplicateCheck] = useState(null);
+  const [checkingDuplicate, setCheckingDuplicate] = useState(false);
+
+  // Debounced duplicate check when text changes
+  useEffect(() => {
+    const trimmed = formData.text.trim();
+    if (trimmed.length < 15) {
+      setDuplicateCheck(null);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        setCheckingDuplicate(true);
+        const res = await checkDuplicateClaim(trimmed);
+        if (res?.isDuplicate) {
+          setDuplicateCheck(res);
+        } else {
+          setDuplicateCheck(null);
+        }
+      } catch {
+        // Non-blocking
+      } finally {
+        setCheckingDuplicate(false);
+      }
+    }, 600);
+
+    return () => clearTimeout(timer);
+  }, [formData.text]);
+
+  // Client-Side Live Triage Calculation
+  const computeLiveTriage = () => {
+    const text = formData.text || '';
+    const flags = [];
+
+    // 1. Sensational
+    if (/\b(breaking|shocking)\b/i.test(text) || /share\s+before\s+deleted/i.test(text)) {
+      flags.push('SENSATIONAL');
+    }
+
+    // 2. Shouting
+    const alphaChars = text.match(/[a-zA-Z]/g);
+    if (alphaChars && alphaChars.length > 0) {
+      const upperChars = text.match(/[A-Z]/g) || [];
+      if (upperChars.length / alphaChars.length > 0.5) {
+        flags.push('SHOUTING');
+      }
+    }
+
+    // 3. Unsourced
+    if (!formData.sourceUrl || !formData.sourceUrl.trim()) {
+      flags.push('UNSOURCED');
+    }
+
+    const isHigh = flags.length >= 2;
+    return { flags, isHigh };
+  };
+
+  const liveTriage = computeLiveTriage();
+
+  // Screenshot Upload & OCR Extraction Handler
+  const handleImageFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Preview
+    const objectUrl = URL.createObjectURL(file);
+    setImagePreview(objectUrl);
+    setUploadingImage(true);
+    setOcrStatus('Extracting claim with Gemini Vision...');
+
+    try {
+      const data = await extractClaimFromImage(file);
+      if (data.text) {
+        setFormData((prev) => ({
+          ...prev,
+          text: data.text,
+          platform: data.platform || prev.platform,
+          category: data.category || prev.category,
+          imageUrl: data.imageUrl || null
+        }));
+        setOcrStatus(
+          data.isAiPowered
+            ? '✓ Text & Platform extracted via Gemini Vision.'
+            : '✓ Image uploaded. (Configure GEMINI_API_KEY for automatic multimodal OCR)'
+        );
+      }
+    } catch (err) {
+      setOcrStatus('Image upload failed: ' + (err.message || 'Please try again.'));
+    } finally {
+      setUploadingImage(false);
+    }
+  };
 
   const validate = () => {
     const errs = {};
@@ -56,7 +165,8 @@ export default function ClaimForm() {
         text: formData.text.trim(),
         platform: formData.platform,
         category: formData.category,
-        sourceUrl: formData.sourceUrl.trim() || null
+        sourceUrl: formData.sourceUrl.trim() || null,
+        imageUrl: formData.imageUrl || null
       });
       setCreatedClaim(claim);
     } catch (err) {
@@ -71,11 +181,15 @@ export default function ClaimForm() {
       text: '',
       platform: 'WHATSAPP',
       category: 'POLITICS',
-      sourceUrl: ''
+      sourceUrl: '',
+      imageUrl: null
     });
     setErrors({});
     setApiError(null);
     setCreatedClaim(null);
+    setImagePreview(null);
+    setOcrStatus(null);
+    setDuplicateCheck(null);
   };
 
   if (createdClaim) {
@@ -96,6 +210,12 @@ export default function ClaimForm() {
           </div>
 
           <p className="tl-success-text">{createdClaim.text}</p>
+
+          {createdClaim.imageUrl && (
+            <div className="tl-success-image-wrap">
+              <img src={createdClaim.imageUrl} alt="Uploaded source screenshot" className="tl-success-screenshot" />
+            </div>
+          )}
 
           <div className="tl-success-meta">
             <span>Category: <strong>{createdClaim.category}</strong></span>
@@ -127,6 +247,72 @@ export default function ClaimForm() {
         </div>
       )}
 
+      {/* FEATURE 1 ENHANCEMENT: Screenshot OCR Intake Zone */}
+      <div className="tl-ocr-intake-zone">
+        <div className="tl-ocr-header">
+          <span className="tl-ocr-title">✦ Screenshot Intake (Gemini Vision OCR & Cloudinary)</span>
+          <button
+            type="button"
+            className="tl-ocr-upload-btn"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploadingImage}
+          >
+            {uploadingImage ? 'Processing Image...' : '📷 Upload Screenshot'}
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/png, image/jpeg, image/webp"
+            className="sr-only"
+            onChange={handleImageFileChange}
+          />
+        </div>
+
+        {imagePreview && (
+          <div className="tl-ocr-preview-bar">
+            <img src={imagePreview} alt="Screenshot thumbnail" className="tl-ocr-thumb" />
+            <div className="tl-ocr-status-wrap">
+              <span className="tl-ocr-status-text">{ocrStatus}</span>
+              <button
+                type="button"
+                className="tl-ocr-remove-btn"
+                onClick={() => {
+                  setImagePreview(null);
+                  setOcrStatus(null);
+                  setFormData((prev) => ({ ...prev, imageUrl: null }));
+                }}
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* FEATURE 1 ENHANCEMENT: Near-Duplicate Warning Banner */}
+      {duplicateCheck && duplicateCheck.matchedClaim && (
+        <div className="tl-duplicate-alert" role="alert">
+          <div className="tl-duplicate-header">
+            <span className="tl-duplicate-badge">⚠️ POTENTIAL DUPLICATE DETECTED ({duplicateCheck.similarity}% MATCH)</span>
+            <StatusBadge status={duplicateCheck.matchedClaim.status} size="sm" />
+          </div>
+          <p className="tl-duplicate-snippet">
+            "{duplicateCheck.matchedClaim.text}"
+          </p>
+          <div className="tl-duplicate-footer">
+            <span>Already submitted in <strong>{duplicateCheck.matchedClaim.category}</strong></span>
+            <Link
+              to={`/claims/${duplicateCheck.matchedClaim.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="tl-duplicate-link"
+            >
+              View Existing Verification Record ↗
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* Claim Text */}
       <div className="tl-form-group">
         <div className="tl-label-row">
@@ -148,6 +334,28 @@ export default function ClaimForm() {
           required
         />
         {errors.text && <p className="tl-error-text">{errors.text}</p>}
+
+        {/* FEATURE 1 ENHANCEMENT: Live Real-Time Triage Indicators */}
+        {formData.text.trim().length > 0 && (
+          <div className="tl-live-triage-bar" aria-live="polite">
+            <span className="tl-live-kicker">Live Triage Signals:</span>
+            <div className="tl-live-chips">
+              <span className={`tl-live-chip ${liveTriage.flags.includes('SENSATIONAL') ? 'tl-chip-active' : ''}`}>
+                Sensational
+              </span>
+              <span className={`tl-live-chip ${liveTriage.flags.includes('SHOUTING') ? 'tl-chip-active' : ''}`}>
+                Shouting (&gt;50% CAPS)
+              </span>
+              <span className={`tl-live-chip ${liveTriage.flags.includes('UNSOURCED') ? 'tl-chip-active' : ''}`}>
+                Unsourced
+              </span>
+              <span className={`tl-live-risk-level ${liveTriage.isHigh ? 'tl-risk-pill-high' : 'tl-risk-pill-normal'}`}>
+                {liveTriage.isHigh ? 'Estimated: HIGH RISK' : 'Estimated: NORMAL'}
+              </span>
+            </div>
+          </div>
+        )}
+
         <p className="tl-form-hint">
           Please include the core assertion. Try to paste the original text without edits.
         </p>

@@ -32,3 +32,20 @@ export async function suggestClaimCategory(text) {
   const response = await api.post('/claims/suggest-category', { text });
   return response.data.data;
 }
+
+export async function checkDuplicateClaim(text) {
+  const response = await api.post('/claims/check-duplicate', { text });
+  return response.data.data;
+}
+
+export async function extractClaimFromImage(file) {
+  const formData = new FormData();
+  formData.append('screenshot', file);
+
+  const response = await api.post('/claims/extract-from-image', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  });
+  return response.data.data;
+}

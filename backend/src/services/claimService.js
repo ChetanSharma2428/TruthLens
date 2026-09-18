@@ -14,7 +14,7 @@ import { AppError } from '../utils/AppError.js';
  * @param {string|null} claimData.sourceUrl
  * @returns {Promise<Object>} The created claim document
  */
-export async function createClaim({ text, platform, category, sourceUrl }) {
+export async function createClaim({ text, platform, category, sourceUrl, imageUrl = null }) {
   // Execute deterministic risk analysis
   const { flags, riskLevel } = analyzeRisk({ text, sourceUrl });
 
@@ -23,6 +23,7 @@ export async function createClaim({ text, platform, category, sourceUrl }) {
     platform,
     category,
     sourceUrl,
+    imageUrl,
     flags,
     riskLevel,
     status: 'UNVERIFIED',

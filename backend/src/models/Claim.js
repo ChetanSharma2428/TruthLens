@@ -36,6 +36,16 @@ const claimSchema = new mongoose.Schema(
       trim: true,
       default: null
     },
+    imageUrl: {
+      type: String,
+      trim: true,
+      default: null
+    },
+    embedding: {
+      type: [Number],
+      select: false,
+      default: undefined
+    },
     flags: {
       type: [
         {

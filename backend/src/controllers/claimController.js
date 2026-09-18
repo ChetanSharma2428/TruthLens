@@ -46,3 +46,37 @@ export const handleSuggestCategory = asyncHandler(async (req, res) => {
     data: suggestion
   });
 });
+
+export const handleCheckDuplicate = asyncHandler(async (req, res) => {
+  const { text } = req.body;
+  const { checkDuplicateClaim } = await import('../services/duplicateDetector.js');
+  const result = await checkDuplicateClaim(text || '');
+
+  res.status(200).json({
+    success: true,
+    data: result
+  });
+});
+
+export const handleExtractFromImage = asyncHandler(async (req, res) => {
+  if (!req.file) {
+    const { AppError } = await import('../utils/AppError.js');
+    throw new AppError('No image file provided. Please upload a screenshot (PNG/JPEG/WEBP).', 400, 'VALIDATION_ERROR');
+  }
+
+  const { uploadImageBuffer } = await import('../config/cloudinary.js');
+  const { extractClaimFromImage } = await import('../services/geminiService.js');
+
+  const [imageUrl, extraction] = await Promise.all([
+    uploadImageBuffer(req.file.buffer, req.file.mimetype),
+    extractClaimFromImage({ buffer: req.file.buffer, mimetype: req.file.mimetype })
+  ]);
+
+  res.status(200).json({
+    success: true,
+    data: {
+      ...extraction,
+      imageUrl
+    }
+  });
+});
