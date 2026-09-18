@@ -63,12 +63,13 @@ async function seed() {
 
     for (let i = 0; i < initialClaims.length; i++) {
       const item = initialClaims[i];
-      const { flags, riskLevel } = analyzeRisk({ text: item.text, sourceUrl: item.sourceUrl });
+      const { flags, riskLevel, metrics } = analyzeRisk({ text: item.text, sourceUrl: item.sourceUrl });
 
       await Claim.create({
         ...item,
         flags,
         riskLevel,
+        riskMetrics: metrics,
         submittedAt: new Date(Date.now() - (initialClaims.length - i) * 3600 * 1000)
       });
     }
