@@ -29,7 +29,7 @@ export default function ReviewerQueue({
     return (
       <EmptyState
         title="Review queue is clear"
-        message="All submitted claims have received human fact-checking verdicts. Great job! Check back as new public claims are submitted."
+        message="All matching submissions have received human fact-checking verdicts. Great job! Check back as new public claims are submitted."
         actionLabel="View Public Feed"
         actionTo="/feed"
       />
@@ -41,24 +41,49 @@ export default function ReviewerQueue({
       <div className="tl-queue-list">
         {claims.map((claim) => {
           const isSelected = selectedClaimId === claim.id;
+          const isLockedByOther = claim.activeLock?.isLockedByOther;
+          const isLockedByMe = claim.activeLock?.isLockedByMe;
 
           return (
             <div
               key={claim.id}
-              className={`tl-queue-item ${isSelected ? 'tl-queue-item-selected' : ''}`}
+              className={`tl-queue-item ${isSelected ? 'tl-queue-item-selected' : ''} ${isLockedByOther ? 'tl-queue-item-locked' : ''}`}
             >
               <div className="tl-queue-item-top">
-                <RiskFlags flags={claim.flags} riskLevel={claim.riskLevel} />
-                <StatusBadge status={claim.status} size="sm" />
+                <RiskFlags
+                  flags={claim.flags}
+                  riskLevel={claim.riskLevel}
+                  metrics={claim.riskMetrics}
+                  interactive={true}
+                />
+                <div className="tl-queue-status-wrap">
+                  {isLockedByOther && (
+                    <span className="tl-lock-pill" title="Another fact-checker is reviewing this claim">
+                      🔒 In Review by Peer
+                    </span>
+                  )}
+                  {isLockedByMe && (
+                    <span className="tl-lock-pill-me" title="You hold the lock on this claim">
+                      🔒 Assigned to You
+                    </span>
+                  )}
+                  <StatusBadge status={claim.status} size="sm" />
+                </div>
               </div>
 
               <p className="tl-queue-item-text">{claim.text}</p>
 
               <div className="tl-queue-item-footer">
                 <div className="tl-queue-item-meta">
-                  <span>{claim.category}</span>
+                  <span className="tl-queue-category">{claim.category}</span>
                   <span>·</span>
                   <span>{claim.platform}</span>
+                  {claim.imageUrl && (
+                    <>
+                      <span>·</span>
+                      <span className="tl-queue-screenshot-badge">📷 Screenshot</span>
+                    </>
+                  )}
                   <span>·</span>
                   <time dateTime={claim.submittedAt}>{formatDate(claim.submittedAt)}</time>
                 </div>

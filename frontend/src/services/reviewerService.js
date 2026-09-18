@@ -15,13 +15,23 @@ export async function logoutReviewer() {
   return response.data.data;
 }
 
-export async function fetchPendingReviews() {
-  const response = await api.get('/reviews/pending');
+export async function fetchPendingReviews(params = {}) {
+  const response = await api.get('/reviews/pending', { params });
   return response.data.data;
 }
 
-export async function submitClaimReview(claimId, { verdict, note }) {
-  const response = await api.post(`/reviews/${claimId}`, { verdict, note });
+export async function submitClaimReview(claimId, { verdict, note, evidenceUrl }) {
+  const response = await api.post(`/reviews/${claimId}`, { verdict, note, evidenceUrl });
+  return response.data.data;
+}
+
+export async function lockClaim(claimId) {
+  const response = await api.post(`/reviews/${claimId}/lock`);
+  return response.data.data;
+}
+
+export async function unlockClaim(claimId) {
+  const response = await api.post(`/reviews/${claimId}/unlock`);
   return response.data.data;
 }
 

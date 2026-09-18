@@ -32,9 +32,18 @@ export function validateSubmitReview(req, res, next) {
     return next(new AppError('Reviewer note cannot exceed 1000 characters.', 400, 'VALIDATION_ERROR'));
   }
 
+  let sanitizedEvidenceUrl = null;
+  if (req.body.evidenceUrl && typeof req.body.evidenceUrl === 'string') {
+    const trimmedUrl = req.body.evidenceUrl.trim();
+    if (trimmedUrl.length > 0) {
+      sanitizedEvidenceUrl = trimmedUrl;
+    }
+  }
+
   req.sanitizedReview = {
     verdict: normalizedVerdict,
-    note: trimmedNote
+    note: trimmedNote,
+    evidenceUrl: sanitizedEvidenceUrl
   };
 
   next();

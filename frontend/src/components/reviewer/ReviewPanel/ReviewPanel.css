@@ -325,3 +325,55 @@
 .tl-query-search-link:hover {
   text-decoration: underline;
 }
+
+.tl-lock-warning-banner {
+  background-color: #fffbeb;
+  border-bottom: 1px solid #fde68a;
+  color: #92400e;
+  padding: var(--space-3) var(--space-6);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+
+.tl-panel-screenshot-preview {
+  margin-top: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.tl-preview-label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.tl-panel-thumb {
+  max-width: 180px;
+  max-height: 120px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  transition: transform 0.2s ease;
+}
+
+.tl-panel-thumb:hover {
+  transform: scale(1.03);
+}
+
+.tl-optional {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.tl-field-hint {
+  display: block;
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  margin-top: var(--space-1);
+}

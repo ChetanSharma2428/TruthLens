@@ -21,6 +21,9 @@ export default function ReviewerDashboardPage() {
   const [queueError, setQueueError] = useState(null);
   const [selectedClaim, setSelectedClaim] = useState(null);
   const [notification, setNotification] = useState(null);
+  const [categoryFilter, setCategoryFilter] = useState('ALL');
+  const [sortFilter, setSortFilter] = useState('priority');
+  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
 
   // 1. Check Authentication on Mount
@@ -40,19 +43,22 @@ export default function ReviewerDashboardPage() {
     verifyAuth();
   }, [navigate]);
 
-  // 2. Fetch Pending Queue
+  // 2. Fetch Pending Queue with filters
   const loadQueue = useCallback(async () => {
     try {
       setLoadingQueue(true);
       setQueueError(null);
-      const data = await fetchPendingReviews();
+      const data = await fetchPendingReviews({
+        category: categoryFilter,
+        sort: sortFilter
+      });
       setPendingClaims(data.claims || []);
     } catch (err) {
       setQueueError(err);
     } finally {
       setLoadingQueue(false);
     }
-  }, []);
+  }, [categoryFilter, sortFilter]);
 
   useEffect(() => {
     if (!checkingAuth) {
@@ -83,6 +89,15 @@ export default function ReviewerDashboardPage() {
       setNotification(null);
     }, 6000);
   };
+
+  // Client-side quick search filter
+  const displayedClaims = pendingClaims.filter((claim) => {
+    if (!searchQuery.trim()) return true;
+    return (
+      claim.text.toLowerCase().includes(searchQuery.toLowerCase().trim()) ||
+      (claim.platform && claim.platform.toLowerCase().includes(searchQuery.toLowerCase().trim()))
+    );
+  });
 
   if (checkingAuth) {
     return (
@@ -154,6 +169,50 @@ export default function ReviewerDashboardPage() {
                 </button>
               </div>
 
+              {/* Reviewer Filter Controls */}
+              <div className="tl-queue-controls">
+                <input
+                  type="search"
+                  className="tl-queue-search-input"
+                  placeholder="Filter queue by text..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  aria-label="Filter queue by text"
+                />
+
+                <div className="tl-queue-filters-row">
+                  <div className="tl-filter-select-wrap">
+                    <label htmlFor="category-filter" className="tl-filter-label">Category:</label>
+                    <select
+                      id="category-filter"
+                      className="tl-filter-select"
+                      value={categoryFilter}
+                      onChange={(e) => setCategoryFilter(e.target.value)}
+                    >
+                      <option value="ALL">All Categories</option>
+                      <option value="POLITICS">Politics</option>
+                      <option value="HEALTH">Health</option>
+                      <option value="FINANCE">Finance</option>
+                      <option value="OTHER">Other</option>
+                    </select>
+                  </div>
+
+                  <div className="tl-filter-select-wrap">
+                    <label htmlFor="sort-filter" className="tl-filter-label">Triage Order:</label>
+                    <select
+                      id="sort-filter"
+                      className="tl-filter-select"
+                      value={sortFilter}
+                      onChange={(e) => setSortFilter(e.target.value)}
+                    >
+                      <option value="priority">Priority (High Risk First)</option>
+                      <option value="newest">Newest First</option>
+                      <option value="oldest">Oldest First</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
               {loadingQueue && <LoadingSpinner message="Updating queue..." size="md" />}
 
               {queueError && (
@@ -166,7 +225,7 @@ export default function ReviewerDashboardPage() {
 
               {!loadingQueue && !queueError && (
                 <ReviewerQueue
-                  claims={pendingClaims}
+                  claims={displayedClaims}
                   selectedClaimId={selectedClaim?.id}
                   onSelectClaim={(claim) => {
                     setSelectedClaim(claim);

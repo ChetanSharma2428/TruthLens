@@ -172,4 +172,50 @@ describe('Reviewer Workflow — End-to-End Integration Tests', () => {
       'Official regulatory bulletin issued refuting shutdown claims entirely.'
     );
   });
+
+  it('supports acquiring and releasing reviewer collision locks', async () => {
+    // Create a temporary unverified claim for testing lock
+    const { Claim } = await import('../src/models/Claim.js');
+    const tempClaim = await Claim.create({
+      text: 'Temporary claim for testing collision locks',
+      platform: 'WHATSAPP',
+      category: 'HEALTH',
+      status: 'UNVERIFIED',
+      submittedAt: new Date()
+    });
+
+    // Acquire lock
+    const lockRes = await fetch(`${baseUrl}/reviews/${tempClaim.id}/lock`, {
+      method: 'POST',
+      headers: { Cookie: reviewerCookie }
+    });
+    assert.equal(lockRes.status, 200);
+    const lockBody = await lockRes.json();
+    assert.equal(lockBody.success, true);
+    assert.equal(lockBody.data.locked, true);
+
+    // Release lock
+    const unlockRes = await fetch(`${baseUrl}/reviews/${tempClaim.id}/unlock`, {
+      method: 'POST',
+      headers: { Cookie: reviewerCookie }
+    });
+    assert.equal(unlockRes.status, 200);
+    const unlockBody = await unlockRes.json();
+    assert.equal(unlockBody.success, true);
+
+    // Clean up
+    await Claim.findByIdAndDelete(tempClaim.id);
+  });
+
+  it('provides and caches advisory fact-checking research queries', async () => {
+    const res = await fetch(`${baseUrl}/reviews/${testClaimId}/research-assistance`, {
+      headers: { Cookie: reviewerCookie }
+    });
+
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.equal(body.success, true);
+    assert.ok(Array.isArray(body.data.assistance));
+    assert.ok(body.data.assistance.length > 0);
+  });
 });

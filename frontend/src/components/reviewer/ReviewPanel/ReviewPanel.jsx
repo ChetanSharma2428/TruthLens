@@ -1,18 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Button from '../../common/Button/Button';
 import RiskFlags from '../../claims/RiskFlags/RiskFlags';
-import StatusBadge from '../../claims/StatusBadge/StatusBadge';
-import { submitClaimReview, fetchResearchAssistance } from '../../../services/reviewerService';
+import {
+  submitClaimReview,
+  fetchResearchAssistance,
+  lockClaim,
+  unlockClaim
+} from '../../../services/reviewerService';
 import './ReviewPanel.css';
 
 export default function ReviewPanel({ claim, onReviewSuccess, onClose }) {
   const [verdict, setVerdict] = useState('');
   const [note, setNote] = useState('');
+  const [evidenceUrl, setEvidenceUrl] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const [lockStatus, setLockStatus] = useState(null);
   const [researchQueries, setResearchQueries] = useState([]);
   const [loadingQueries, setLoadingQueries] = useState(false);
   const [showResearch, setShowResearch] = useState(false);
+
+  // Acquire collaborative review lock on mount to prevent newsroom collision
+  useEffect(() => {
+    let isMounted = true;
+    if (claim?.id) {
+      lockClaim(claim.id)
+        .then((status) => {
+          if (isMounted) setLockStatus(status);
+        })
+        .catch(() => {
+          // Graceful fallback
+        });
+    }
+
+    return () => {
+      isMounted = false;
+      if (claim?.id) {
+        unlockClaim(claim.id).catch(() => {});
+      }
+    };
+  }, [claim?.id]);
 
   if (!claim) return null;
 
@@ -35,7 +62,8 @@ export default function ReviewPanel({ claim, onReviewSuccess, onClose }) {
       setSubmitting(true);
       const updated = await submitClaimReview(claim.id, {
         verdict,
-        note: trimmedNote
+        note: trimmedNote,
+        evidenceUrl: evidenceUrl.trim() || null
       });
       onReviewSuccess(updated);
     } catch (err) {
@@ -49,7 +77,7 @@ export default function ReviewPanel({ claim, onReviewSuccess, onClose }) {
     {
       value: 'VERIFIED_TRUE',
       label: 'Verified True',
-      desc: 'Claim is substantiated by credible official sources and evidence.',
+      desc: 'Claim is substantiated by credible official sources and primary evidence.',
       styleClass: 'tl-choice-true'
     },
     {
@@ -61,7 +89,7 @@ export default function ReviewPanel({ claim, onReviewSuccess, onClose }) {
     {
       value: 'MISLEADING',
       label: 'Misleading',
-      desc: 'Claim contains genuine elements stripped of essential context.',
+      desc: 'Claim contains genuine elements stripped of essential context or exaggerated.',
       styleClass: 'tl-choice-misleading'
     }
   ];
@@ -83,6 +111,12 @@ export default function ReviewPanel({ claim, onReviewSuccess, onClose }) {
         </button>
       </div>
 
+      {lockStatus?.lockedByOther && (
+        <div className="tl-lock-warning-banner" role="alert">
+          <span>⚠️ Another reviewer is actively triaging this claim. Submitting will update the authoritative record.</span>
+        </div>
+      )}
+
       <div className="tl-panel-body">
         {/* SECTION 1: Exact Claim Content */}
         <div className="tl-panel-section">
@@ -90,6 +124,20 @@ export default function ReviewPanel({ claim, onReviewSuccess, onClose }) {
           <blockquote className="tl-panel-claim-quote">
             "{claim.text}"
           </blockquote>
+
+          {claim.imageUrl && (
+            <div className="tl-panel-screenshot-preview">
+              <span className="tl-preview-label">Attached Viral Screenshot:</span>
+              <a href={claim.imageUrl} target="_blank" rel="noopener noreferrer">
+                <img
+                  src={claim.imageUrl}
+                  alt="Attached screenshot evidence"
+                  className="tl-panel-thumb"
+                />
+              </a>
+            </div>
+          )}
+
           <div className="tl-panel-claim-details">
             <div>
               <strong>Platform:</strong> {claim.platform}
@@ -114,7 +162,12 @@ export default function ReviewPanel({ claim, onReviewSuccess, onClose }) {
         <div className="tl-panel-section">
           <h3 className="tl-section-heading">2. Automated Triage Signals</h3>
           <div className="tl-panel-risk-summary">
-            <RiskFlags flags={claim.flags} riskLevel={claim.riskLevel} />
+            <RiskFlags
+              flags={claim.flags}
+              riskLevel={claim.riskLevel}
+              metrics={claim.riskMetrics}
+              interactive={true}
+            />
           </div>
           <p className="tl-risk-reminder">
             Automated signals measure viral urgency patterns. Factual truth is determined by your investigation below.
@@ -234,6 +287,24 @@ export default function ReviewPanel({ claim, onReviewSuccess, onClose }) {
               disabled={submitting}
               required
             />
+          </div>
+
+          <div className="tl-form-group">
+            <label htmlFor="reviewer-evidence-url" className="tl-form-label">
+              Official Citation / Evidence Link <span className="tl-optional">(Optional)</span>
+            </label>
+            <input
+              id="reviewer-evidence-url"
+              type="url"
+              className="tl-form-input"
+              placeholder="https://pib.gov.in/factcheck/... or credible news report"
+              value={evidenceUrl}
+              onChange={(e) => setEvidenceUrl(e.target.value)}
+              disabled={submitting}
+            />
+            <span className="tl-field-hint">
+              Provides the public and newsroom with a direct primary reference link.
+            </span>
           </div>
 
           <div className="tl-panel-actions">

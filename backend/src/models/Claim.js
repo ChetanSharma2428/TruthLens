@@ -80,6 +80,11 @@ const claimSchema = new mongoose.Schema(
       trim: true,
       default: null
     },
+    evidenceUrl: {
+      type: String,
+      trim: true,
+      default: null
+    },
     reviewerSessionId: {
       type: String,
       default: null

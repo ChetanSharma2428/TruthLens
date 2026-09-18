@@ -131,6 +131,19 @@ export default function ClaimDetailPage() {
                     <div className="tl-verdict-note-body">
                       <h3 className="tl-note-title">Reviewer Explanation & Evidence Note:</h3>
                       <p className="tl-note-content">{claim.reviewerNote}</p>
+                      {claim.evidenceUrl && (
+                        <div className="tl-verdict-evidence-row">
+                          <span className="tl-evidence-label">Official Reference Citation:</span>{' '}
+                          <a
+                            href={claim.evidenceUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="tl-verdict-evidence-link"
+                          >
+                            {claim.evidenceUrl} ↗
+                          </a>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
