@@ -1,13 +1,7 @@
 import crypto from 'crypto';
 import { cacheGet, cacheSet } from '../config/redis.js';
 
-/**
- * TruthLens Deterministic Risk Engine
- *
- * Evaluates submitted claim text and source attribution against
- * deterministic heuristic rules. Risk signals indicate viral urgency patterns,
- * NOT factual truth.
- */
+// TruthLens Deterministic Risk Engine: Evaluates claim text against deterministic heuristic rules
 
 export const RISK_FLAGS = {
   SENSATIONAL: 'SENSATIONAL',
@@ -26,21 +20,13 @@ const SENSATIONAL_PATTERNS = [
   { label: 'share before deleted', regex: /share\s+before\s+deleted/i }
 ];
 
-/**
- * Checks if claim text contains sensational urgency trigger terms.
- * @param {string} text
- * @returns {boolean}
- */
+// Checks if claim text contains sensational urgency trigger terms
 export function checkSensational(text) {
   if (!text || typeof text !== 'string') return false;
   return SENSATIONAL_PATTERNS.some((p) => p.regex.test(text));
 }
 
-/**
- * Checks sensational keywords with detailed matched keyword list.
- * @param {string} text
- * @returns {{ isSensational: boolean, matchedKeywords: string[] }}
- */
+// Checks sensational keywords with detailed matched keyword list
 export function checkSensationalWithDetails(text) {
   if (!text || typeof text !== 'string') {
     return { isSensational: false, matchedKeywords: [] };
@@ -59,12 +45,7 @@ export function checkSensationalWithDetails(text) {
   };
 }
 
-/**
- * Checks if more than 50% of the alphabetic characters are uppercase (shouting).
- * Ignores numbers, punctuation, emojis, and whitespace.
- * @param {string} text
- * @returns {boolean}
- */
+// Checks if more than 50% of alphabetic characters are uppercase (shouting)
 export function checkShouting(text) {
   if (!text || typeof text !== 'string') return false;
   
@@ -77,11 +58,7 @@ export function checkShouting(text) {
   return upperRatio > 0.5;
 }
 
-/**
- * Checks shouting with detailed character and ratio breakdown.
- * @param {string} text
- * @returns {{ isShouting: boolean, upperRatio: number, uppercasePercent: number, upperCount: number, totalAlpha: number }}
- */
+// Checks shouting with detailed character and ratio breakdown
 export function checkShoutingWithDetails(text) {
   if (!text || typeof text !== 'string') {
     return {
@@ -117,22 +94,14 @@ export function checkShoutingWithDetails(text) {
   };
 }
 
-/**
- * Checks if the claim is unsourced (missing or empty source URL).
- * @param {string|null|undefined} sourceUrl
- * @returns {boolean}
- */
+// Checks if the claim is unsourced (missing or empty source URL)
 export function checkUnsourced(sourceUrl) {
   if (!sourceUrl) return true;
   if (typeof sourceUrl !== 'string') return true;
   return sourceUrl.trim().length === 0;
 }
 
-/**
- * Checks source attribution with details.
- * @param {string|null|undefined} sourceUrl
- * @returns {{ isUnsourced: boolean, hasSource: boolean }}
- */
+// Checks source attribution with details
 export function checkUnsourcedWithDetails(sourceUrl) {
   const isUnsourced = checkUnsourced(sourceUrl);
   return {
@@ -141,25 +110,7 @@ export function checkUnsourcedWithDetails(sourceUrl) {
   };
 }
 
-/**
- * Evaluates all risk signals and computes overall risk level and breakdown metrics.
- * Rule: 2 or more flags => HIGH risk level.
- *
- * @param {Object} input
- * @param {string} input.text - The claim text
- * @param {string|null} [input.sourceUrl] - The optional source URL
- * @returns {{
- *   flags: string[],
- *   riskLevel: string,
- *   metrics: {
- *     uppercaseRatio: number,
- *     uppercasePercent: number,
- *     detectedKeywords: string[],
- *     hasSource: boolean,
- *     riskScore: number
- *   }
- * }}
- */
+// Evaluates all risk signals and computes overall risk level (2+ flags = HIGH)
 export function analyzeRisk({ text = '', sourceUrl = null } = {}) {
   const flags = [];
 
@@ -193,27 +144,13 @@ export function analyzeRisk({ text = '', sourceUrl = null } = {}) {
   };
 }
 
-/**
- * Computes deterministic hash for caching risk analysis results.
- * @param {string} text
- * @param {string|null} sourceUrl
- * @returns {string}
- */
+// Computes deterministic hash for caching risk analysis results
 export function getRiskCacheKey(text = '', sourceUrl = '') {
   const normalized = `${(text || '').trim()}||${(sourceUrl || '').trim()}`;
   return `risk:${crypto.createHash('sha256').update(normalized).digest('hex')}`;
 }
 
-/**
- * Evaluates risk with Redis caching layer (or memory fallback).
- * Avoids recalculating signals for duplicate incoming checks.
- *
- * @param {Object} input
- * @param {string} input.text
- * @param {string|null} [input.sourceUrl]
- * @param {number} [ttlSeconds=3600]
- * @returns {Promise<Object>}
- */
+// Evaluates risk with Redis caching layer or memory fallback
 export async function analyzeRiskWithCache({ text = '', sourceUrl = null }, ttlSeconds = 3600) {
   const cacheKey = getRiskCacheKey(text, sourceUrl);
   const cached = await cacheGet(cacheKey);

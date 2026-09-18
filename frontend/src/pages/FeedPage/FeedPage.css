@@ -3,11 +3,12 @@
   flex-direction: column;
   min-height: 100vh;
   width: 100%;
+  background-color: #f8fafc;
 }
 
 .tl-feed-main {
   flex: 1;
-  padding: var(--space-8) 0 var(--space-16);
+  padding: 2.5rem 0 4rem;
 }
 
 .tl-feed-container {
@@ -20,9 +21,9 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  margin-bottom: var(--space-8);
+  margin-bottom: 2rem;
   border-bottom: 1px solid var(--border-subtle);
-  padding-bottom: var(--space-6);
+  padding-bottom: 1.5rem;
 }
 
 @media (min-width: 640px) {
@@ -34,29 +35,180 @@
 }
 
 .tl-feed-kicker {
-  display: block;
-  font-family: var(--font-mono);
+  display: inline-block;
   font-size: 0.75rem;
   font-weight: 700;
-  color: var(--text-muted);
-  letter-spacing: 0.08em;
+  color: #0066ff;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  margin-bottom: var(--space-1);
+  margin-bottom: 0.35rem;
 }
 
 .tl-feed-title {
-  font-family: var(--font-serif);
   font-size: 2.25rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: var(--space-2);
+  font-weight: 800;
+  color: #0b1e3f;
+  margin-bottom: 0.35rem;
+  letter-spacing: -0.02em;
 }
 
 .tl-feed-subtitle {
   font-size: 1rem;
-  color: var(--text-secondary);
+  color: #64748b;
   max-width: 640px;
   line-height: 1.5;
+}
+
+/* Two-Column Grid Layout (Image 2 - Screen 2) */
+.tl-feed-layout-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+@media (min-width: 960px) {
+  .tl-feed-layout-grid {
+    grid-template-columns: 1fr 310px;
+  }
+}
+
+.tl-feed-list-col {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Sidebar Widgets */
+.tl-feed-sidebar-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.tl-sidebar-widget-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.tl-widget-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 0.75rem;
+}
+
+.tl-widget-icon {
+  font-size: 1.1rem;
+}
+
+.tl-widget-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* Live Stats */
+.tl-widget-stats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.tl-widget-stat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.875rem;
+}
+
+.tl-stat-bullet {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 0.6rem;
+  flex-shrink: 0;
+}
+
+.tl-bullet-blue { background-color: #0066ff; }
+.tl-bullet-green { background-color: #10b981; }
+.tl-bullet-amber { background-color: #f59e0b; }
+
+.tl-stat-name {
+  color: #475569;
+  flex: 1;
+}
+
+.tl-stat-val {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* Trending Topics */
+.tl-trending-tags-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tl-trending-tag-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.45rem 0.75rem;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid transparent;
+  color: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--transition-fast);
+}
+
+.tl-trending-tag-item:hover {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #0066ff;
+}
+
+.tl-tag-name {
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.tl-trending-tag-item:hover .tl-tag-name {
+  color: #0066ff;
+}
+
+.tl-tag-count {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+/* Impact Quote Card */
+.tl-widget-quote-card {
+  background: linear-gradient(135deg, #0b1e3f 0%, #1e3a8a 100%);
+  color: #ffffff;
+  border: none;
+}
+
+.tl-widget-quote {
+  font-size: 1rem;
+  font-weight: 700;
+  font-style: italic;
+  line-height: 1.4;
+  margin-bottom: 0.5rem;
+}
+
+.tl-widget-quote-author {
+  font-size: 0.75rem;
+  color: #93c5fd;
+  display: block;
 }
 
 .tl-feed-header-action {

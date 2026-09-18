@@ -1,6 +1,4 @@
-/**
- * Simple structured console logger for TruthLens backend
- */
+// Simple structured console logger for TruthLens backend
 export const logger = {
   info: (msg, ...args) => {
     if (process.env.NODE_ENV !== 'test') {

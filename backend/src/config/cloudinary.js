@@ -12,12 +12,7 @@ if (env.CLOUDINARY_CLOUD_NAME && env.CLOUDINARY_API_KEY && env.CLOUDINARY_API_SE
   isCloudinaryConfigured = true;
 }
 
-/**
- * Uploads an image buffer to Cloudinary or falls back to a base64 data URI.
- * @param {Buffer} buffer
- * @param {string} mimetype
- * @returns {Promise<string>} Uploaded image URL or data URI
- */
+// Uploads an image buffer to Cloudinary or falls back to a base64 data URI
 export async function uploadImageBuffer(buffer, mimetype = 'image/jpeg') {
   if (!isCloudinaryConfigured) {
     // Graceful fallback: return data URI when Cloudinary is not configured

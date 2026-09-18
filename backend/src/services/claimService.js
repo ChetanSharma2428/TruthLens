@@ -2,19 +2,9 @@ import mongoose from 'mongoose';
 import { Claim } from '../models/Claim.js';
 import { analyzeRisk } from './riskAnalyzer.js';
 import { AppError } from '../utils/AppError.js';
-import { cacheGet, cacheSet } from '../config/redis.js';
+import { cacheGet, cacheSet, cacheDel, cacheDelPattern } from '../config/redis.js';
 
-/**
- * Creates a new claim with authoritative server-calculated risk analysis.
- * Initial status is strictly UNVERIFIED.
- *
- * @param {Object} claimData
- * @param {string} claimData.text
- * @param {string} claimData.platform
- * @param {string} claimData.category
- * @param {string|null} claimData.sourceUrl
- * @returns {Promise<Object>} The created claim document
- */
+// Creates a new claim with risk analysis (initial status: UNVERIFIED)
 export async function createClaim({ text, platform, category, sourceUrl, imageUrl = null }) {
   // Execute deterministic risk analysis with detailed metrics
   const { flags, riskLevel, metrics } = analyzeRisk({ text, sourceUrl });
@@ -35,17 +25,16 @@ export async function createClaim({ text, platform, category, sourceUrl, imageUr
     reviewedAt: null
   });
 
+  // Invalidate feed and platform stats caches
+  await Promise.all([
+    cacheDelPattern('feed:*'),
+    cacheDel('truthlens:platform_stats')
+  ]).catch(() => {});
+
   return claim;
 }
 
-/**
- * Fetches public claims feed with filtering, sorting, and pagination.
- * DP1: Default sort is Newest First (submittedAt DESC).
- * DP2: Unverified claims are returned transparently.
- *
- * @param {Object} params
- * @returns {Promise<Object>} Claims array and pagination metadata
- */
+// Fetches public claims feed with filtering, sorting (DP1), visibility (DP2), and pagination
 export async function getClaimsFeed({
   category = 'ALL',
   status = 'ALL',
@@ -106,10 +95,15 @@ export async function getClaimsFeed({
   const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
   const skip = (pageNum - 1) * limitNum;
 
-  const [claims, total] = await Promise.all([
-    Claim.find(query).sort(sortOption).skip(skip).limit(limitNum),
+  const [rawClaims, total] = await Promise.all([
+    Claim.find(query).sort(sortOption).skip(skip).limit(limitNum).lean(),
     Claim.countDocuments(query)
   ]);
+
+  const claims = rawClaims.map((c) => ({
+    ...c,
+    id: c._id.toString()
+  }));
 
   const totalPages = Math.ceil(total / limitNum) || 1;
 
@@ -137,12 +131,7 @@ export async function getClaimsFeed({
   };
 }
 
-/**
- * Retrieves a single claim by its ID.
- *
- * @param {string} id
- * @returns {Promise<Object>}
- */
+// Retrieves a single claim by its ID with related claims and audit trail
 export async function getClaimById(id) {
   if (!mongoose.Types.ObjectId.isValid(id)) {
     throw new AppError(`Invalid claim ID format: '${id}'`, 400, 'INVALID_ID');
@@ -157,19 +146,26 @@ export async function getClaimById(id) {
     };
   }
 
-  const claim = await Claim.findById(id);
+  const claim = await Claim.findById(id).lean();
   if (!claim) {
     throw new AppError('Claim not found.', 404, 'CLAIM_NOT_FOUND');
   }
+  claim.id = claim._id.toString();
 
-  // Fetch related claims in the same subject category
-  const relatedClaims = await Claim.find({
+  // Fetch related claims in the same subject category with lean projection
+  const rawRelated = await Claim.find({
     _id: { $ne: claim._id },
     category: claim.category
   })
     .sort({ submittedAt: -1 })
     .limit(3)
-    .select('text category platform status riskLevel flags submittedAt');
+    .select('text category platform status riskLevel flags submittedAt')
+    .lean();
+
+  const relatedClaims = rawRelated.map((r) => ({
+    ...r,
+    id: r._id.toString()
+  }));
 
   // Build immutable audit trail timeline (DP3)
   const auditTimeline = [
@@ -185,9 +181,9 @@ export async function getClaimById(id) {
       event: 'RISK_TRIAGED',
       timestamp: claim.submittedAt,
       label: 'Deterministic Heuristic Scan',
-      description: claim.flags.length === 0
+      description: (claim.flags || []).length === 0
         ? 'Zero automated virality flags triggered. Evaluated as Normal Risk.'
-        : `Triggered ${claim.flags.join(', ')} (${claim.riskLevel} Risk triage state).`
+        : `Triggered ${(claim.flags || []).join(', ')} (${claim.riskLevel} Risk triage state).`
     }
   ];
 
@@ -202,7 +198,7 @@ export async function getClaimById(id) {
   }
 
   const claimData = {
-    ...claim.toJSON(),
+    ...claim,
     relatedClaims,
     auditTimeline
   };

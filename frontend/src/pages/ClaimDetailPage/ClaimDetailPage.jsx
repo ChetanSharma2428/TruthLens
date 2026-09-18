@@ -103,166 +103,205 @@ export default function ClaimDetailPage() {
 
           {!loading && !error && claim && (
             <article className="tl-detail-article">
-              {/* Header */}
-              <header className="tl-detail-header">
-                <div className="tl-detail-status-bar">
-                  <div className="tl-status-left">
-                    <span className="tl-record-id">AUDIT RECORD #{claim.id.slice(-6).toUpperCase()}</span>
-                    <StatusBadge status={claim.status} size="md" />
-                  </div>
-                  <RiskFlags
-                    flags={claim.flags}
-                    riskLevel={claim.riskLevel}
-                    metrics={claim.riskMetrics}
-                    size="md"
-                    interactive={true}
-                  />
-                </div>
-
-                <h1 className="tl-detail-claim-text">"{claim.text}"</h1>
-              </header>
-
-              {/* Section 1: Verification Decision */}
-              <section className="tl-detail-section tl-decision-section">
-                <h2 className="tl-section-title">Human Verification Verdict</h2>
-                {claim.status === 'UNVERIFIED' ? (
-                  <div className="tl-unverified-callout">
-                    <div className="tl-unverified-badge-row">
-                      <StatusBadge status="UNVERIFIED" size="md" />
-                      <span className="tl-unverified-tagline">Pending Newsroom Review</span>
-                    </div>
-                    <p className="tl-unverified-desc">
-                      This claim is currently undergoing editorial verification. Factual verdicts are determined strictly through primary-source evidence analysis, not automated heuristics.
-                    </p>
-                    <div className="tl-unverified-action">
-                      <Button variant="outline" size="sm" to="/reviewer/access">
-                        Reviewer Workspace →
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className={`tl-verdict-card tl-verdict-${claim.status.toLowerCase()}`}>
-                    <div className="tl-verdict-top">
-                      <StatusBadge status={claim.status} size="md" />
-                      <span className="tl-verdict-time">
-                        Reviewed on {formatDate(claim.reviewedAt)}
-                      </span>
-                    </div>
-                    <div className="tl-verdict-note-body">
-                      <h3 className="tl-note-title">Reviewer Explanation & Evidence Note:</h3>
-                      <p className="tl-note-content">{claim.reviewerNote}</p>
-                      {claim.evidenceUrl && (
-                        <div className="tl-verdict-evidence-row">
-                          <span className="tl-evidence-label">Official Reference Citation:</span>{' '}
-                          <a
-                            href={claim.evidenceUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="tl-verdict-evidence-link"
-                          >
-                            {claim.evidenceUrl} ↗
-                          </a>
-                        </div>
-                      )}
-                    </div>
+              {/* Top Banner: Prominent Verdict Badge (Image 2 - Screen 4) */}
+              <div className="tl-detail-verdict-banner-wrap">
+                {claim.status === 'FALSE' && (
+                  <div className="tl-banner-verdict tl-banner-false">
+                    <span className="tl-verdict-icon">✕</span> FALSE
                   </div>
                 )}
-              </section>
+                {claim.status === 'VERIFIED_TRUE' && (
+                  <div className="tl-banner-verdict tl-banner-true">
+                    <span className="tl-verdict-icon">✓</span> VERIFIED TRUE
+                  </div>
+                )}
+                {claim.status === 'MISLEADING' && (
+                  <div className="tl-banner-verdict tl-banner-misleading">
+                    <span className="tl-verdict-icon">⚠️</span> MISLEADING
+                  </div>
+                )}
+                {claim.status === 'UNVERIFIED' && (
+                  <div className="tl-banner-verdict tl-banner-unverified">
+                    UNVERIFIED
+                  </div>
+                )}
+              </div>
 
-              {/* Section 2: Automated Risk Analysis */}
-              <section className="tl-detail-section">
-                <h2 className="tl-section-title">Automated Risk Analysis</h2>
-                <p className="tl-section-sub">
-                  Deterministic triage signals evaluated upon submission. High risk indicates viral amplification patterns, not necessarily factual falsehood.
-                </p>
-
-                <div className="tl-risk-cards-grid">
-                  {claim.flags.length === 0 ? (
-                    <div className="tl-no-flags-card">
-                      <span className="tl-check-icon">✓</span>
-                      <div>
-                        <strong>No Automated Risk Flags Triggered</strong>
-                        <p>The submission does not exhibit sensational urgency keywords, shout capitalization, or missing source attribution.</p>
-                      </div>
-                    </div>
-                  ) : (
-                    claim.flags.map((flag) => (
-                      <div key={flag} className="tl-detail-flag-card">
-                        <div className="tl-flag-top">
-                          <span className="tl-flag-name">{flag}</span>
-                          <span className="tl-flag-indicator">Active</span>
-                        </div>
-                        <p className="tl-flag-explanation">{getFlagExplanation(flag)}</p>
-                        {flag === 'SHOUTING' && claim.riskMetrics?.uppercasePercent !== undefined && (
-                          <div className="tl-flag-metric-pill">
-                            Measured: <strong>{claim.riskMetrics.uppercasePercent}%</strong> uppercase (&gt;50% threshold)
-                          </div>
-                        )}
-                        {flag === 'SENSATIONAL' && claim.riskMetrics?.detectedKeywords?.length > 0 && (
-                          <div className="tl-flag-metric-pill">
-                            Detected triggers: <strong>{claim.riskMetrics.detectedKeywords.join(', ')}</strong>
-                          </div>
-                        )}
-                      </div>
-                    ))
-                  )}
+              {/* Main Headline */}
+              <header className="tl-detail-header-v2">
+                <h1 className="tl-detail-claim-title">"{claim.text}"</h1>
+                <div className="tl-detail-meta-pill-row">
+                  <span className="tl-meta-pill tl-meta-plat">
+                    <strong>Platform:</strong> {claim.platform}
+                  </span>
+                  <span className="tl-meta-pill tl-meta-cat">
+                    <strong>Category:</strong> {claim.category}
+                  </span>
+                  <span className="tl-meta-pill tl-meta-date">
+                    <strong>Submitted:</strong> {formatDate(claim.submittedAt)}
+                  </span>
                 </div>
-              </section>
+              </header>
 
-              {/* Section 3: Source & Submission Metadata */}
-              <section className="tl-detail-section">
-                <h2 className="tl-section-title">Source Attribution & Context</h2>
-                <dl className="tl-meta-definition-list">
-                  <div className="tl-meta-row">
-                    <dt>Circulating Platform:</dt>
-                    <dd>{claim.platform}</dd>
-                  </div>
-                  <div className="tl-meta-row">
-                    <dt>Subject Category:</dt>
-                    <dd>{claim.category}</dd>
-                  </div>
-                  <div className="tl-meta-row">
-                    <dt>Provided Source Link:</dt>
-                    <dd>
-                      {claim.sourceUrl ? (
-                        <a href={claim.sourceUrl} target="_blank" rel="noopener noreferrer" className="tl-source-url">
-                          {claim.sourceUrl} ↗
-                        </a>
+              {/* Two Column Layout (Image 2 - Screen 4) */}
+              <div className="tl-detail-split-layout">
+                {/* Left Column: Fact-Check Summary & Analysis */}
+                <div className="tl-detail-main-col">
+                  {/* Fact-Check Summary Card */}
+                  <div className={`tl-factcheck-summary-card tl-summary-${claim.status.toLowerCase()}`}>
+                    <div className="tl-summary-header">
+                      <div className="tl-summary-title-wrap">
+                        <span className="tl-summary-shield-icon">🛡️</span>
+                        <h3 className="tl-summary-title">Fact-Check Summary</h3>
+                      </div>
+                      <span className="tl-summary-reviewed-date">
+                        Reviewed: {formatDate(claim.reviewedAt)}
+                      </span>
+                    </div>
+
+                    <p className="tl-summary-body-text">
+                      {claim.status === 'UNVERIFIED' ? (
+                        "This claim is currently undergoing editorial review. Factual verdicts are determined strictly through primary-source evidence analysis, not automated heuristics."
                       ) : (
-                        <span className="tl-unsourced-tag">None provided (Unsourced)</span>
+                        claim.reviewerNote
                       )}
-                    </dd>
+                    </p>
+
+                    <div className="tl-summary-footer-meta">
+                      <span>Verified by: <strong>TruthLens Editorial Newsroom</strong></span>
+                      {claim.evidenceUrl && (
+                        <span>
+                          Source: <a href={claim.evidenceUrl} target="_blank" rel="noopener noreferrer" className="tl-evidence-link">{claim.evidenceUrl} ↗</a>
+                        </span>
+                      )}
+                    </div>
                   </div>
+
+                  {/* Reviewer Note Detailed Section */}
+                  {claim.reviewerNote && (
+                    <section className="tl-detail-content-card">
+                      <h3 className="tl-card-inner-title">Reviewer Analysis & Context</h3>
+                      <p className="tl-card-inner-desc">{claim.reviewerNote}</p>
+                    </section>
+                  )}
+
+                  {/* Automated Risk Analysis Card */}
+                  <section className="tl-detail-content-card">
+                    <div className="tl-card-inner-header">
+                      <h3 className="tl-card-inner-title">Automated Risk Analysis</h3>
+                      <RiskFlags
+                        flags={claim.flags}
+                        riskLevel={claim.riskLevel}
+                        metrics={claim.riskMetrics}
+                        size="md"
+                        interactive={true}
+                      />
+                    </div>
+                    <p className="tl-card-inner-sub">
+                      Deterministic triage signals evaluated upon submission. High risk indicates viral amplification patterns, not necessarily factual falsehood.
+                    </p>
+
+                    <div className="tl-risk-cards-grid">
+                      {claim.flags.length === 0 ? (
+                        <div className="tl-no-flags-card">
+                          <span className="tl-check-icon">✓</span>
+                          <div>
+                            <strong>No Automated Risk Flags Triggered</strong>
+                            <p>The submission does not exhibit sensational urgency keywords, shout capitalization, or missing source attribution.</p>
+                          </div>
+                        </div>
+                      ) : (
+                        claim.flags.map((flag) => (
+                          <div key={flag} className="tl-detail-flag-card">
+                            <div className="tl-flag-top">
+                              <span className="tl-flag-name">{flag}</span>
+                              <span className="tl-flag-indicator">Active</span>
+                            </div>
+                            <p className="tl-flag-explanation">{getFlagExplanation(flag)}</p>
+                            {flag === 'SHOUTING' && claim.riskMetrics?.uppercasePercent !== undefined && (
+                              <div className="tl-flag-metric-pill">
+                                Measured: <strong>{claim.riskMetrics.uppercasePercent}%</strong> uppercase (&gt;50% threshold)
+                              </div>
+                            )}
+                            {flag === 'SENSATIONAL' && claim.riskMetrics?.detectedKeywords?.length > 0 && (
+                              <div className="tl-flag-metric-pill">
+                                Detected triggers: <strong>{claim.riskMetrics.detectedKeywords.join(', ')}</strong>
+                              </div>
+                            )}
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </section>
+                </div>
+
+                {/* Right Column: Screenshot & Evidence Sources (Image 2 - Screen 4) */}
+                <aside className="tl-detail-side-col">
+                  {/* Screenshot Card with FALSE stamp */}
                   {claim.imageUrl && (
-                    <div className="tl-meta-row tl-meta-image-row">
-                      <dt>Attached Screenshot:</dt>
-                      <dd>
-                        <button
-                          type="button"
-                          className="tl-screenshot-thumb-btn"
-                          onClick={() => setShowScreenshotModal(true)}
-                          title="Click to view full screenshot"
-                        >
-                          <img
-                            src={claim.imageUrl}
-                            alt="Attached viral screenshot"
-                            className="tl-detail-screenshot-thumb"
-                          />
-                          <span className="tl-expand-badge">🔍 Click to Expand</span>
-                        </button>
-                      </dd>
+                    <div className="tl-detail-side-card">
+                      <h4 className="tl-side-card-title">Circulating Evidence Screenshot</h4>
+                      <div
+                        className="tl-detail-screenshot-frame"
+                        onClick={() => setShowScreenshotModal(true)}
+                        role="button"
+                        tabIndex={0}
+                      >
+                        <img src={claim.imageUrl} alt="Circulating viral screenshot" className="tl-detail-main-img" />
+                        {claim.status === 'FALSE' && (
+                          <div className="tl-detail-stamp tl-stamp-false">FALSE</div>
+                        )}
+                        {claim.status === 'VERIFIED_TRUE' && (
+                          <div className="tl-detail-stamp tl-stamp-true">VERIFIED</div>
+                        )}
+                      </div>
+                      <span className="tl-screenshot-hint">Click image to inspect full size</span>
                     </div>
                   )}
-                  <div className="tl-meta-row">
-                    <dt>Submitted At:</dt>
-                    <dd>{formatDate(claim.submittedAt)}</dd>
-                  </div>
-                </dl>
-              </section>
 
-              {/* Section 4: Audit Trail Timeline (DP3) */}
+                  {/* Risk Signals Detected Box */}
+                  <div className="tl-detail-side-card">
+                    <div className="tl-side-card-header">
+                      <h4 className="tl-side-card-title">Risk Signals Detected</h4>
+                      <span className={`tl-risk-side-pill ${claim.riskLevel === 'HIGH' ? 'high' : 'normal'}`}>
+                        {claim.riskLevel} RISK
+                      </span>
+                    </div>
+                    <div className="tl-side-signals-list">
+                      <div className={`tl-side-sig-item ${claim.flags.includes('SENSATIONAL') ? 'active' : ''}`}>
+                        <span className="tl-sig-bullet">●</span> Sensational Language
+                      </div>
+                      <div className={`tl-side-sig-item ${claim.flags.includes('SHOUTING') ? 'active' : ''}`}>
+                        <span className="tl-sig-bullet">●</span> Shouting / Excessive Caps
+                      </div>
+                      <div className={`tl-side-sig-item ${claim.flags.includes('UNSOURCED') ? 'active' : ''}`}>
+                        <span className="tl-sig-bullet">●</span> Unsourced Claim
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Evidence Sources Card */}
+                  <div className="tl-detail-side-card">
+                    <h4 className="tl-side-card-title">Evidence Sources</h4>
+                    {claim.evidenceUrl ? (
+                      <a
+                        href={claim.evidenceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="tl-side-evidence-link"
+                      >
+                        🔗 Official Reference Citation ↗
+                      </a>
+                    ) : (
+                      <p className="tl-side-empty-evidence">Primary evidence link pending reviewer attachment.</p>
+                    )}
+                  </div>
+                </aside>
+              </div>
+
+              {/* Section 4: Audit Trail Timeline */}
               <section className="tl-detail-section">
-                <h2 className="tl-section-title">Audit Trail & Immutability Record (DP3)</h2>
+                <h2 className="tl-section-title">Audit Trail & Verification Record</h2>
                 <p className="tl-section-sub">
                   Immutable chronological provenance record from initial community submission to human editorial verdict.
                 </p>
@@ -321,7 +360,7 @@ export default function ClaimDetailPage() {
               {/* Section 6: Editorial Standard Footer */}
               <footer className="tl-detail-audit-footer">
                 <p className="tl-immutability-note">
-                  <strong>Editorial Standard (DP3):</strong> Core claim text and initial metadata are permanently immutable post-submission. Corrections must be entered as distinct new submissions to preserve audit integrity.
+                  <strong>Editorial Standard:</strong> Core claim text and initial metadata are permanently immutable post-submission. Corrections must be entered as distinct new submissions to preserve audit integrity.
                 </p>
               </footer>
             </article>

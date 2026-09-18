@@ -6,14 +6,7 @@ if (env.GEMINI_API_KEY) {
   genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
 }
 
-/**
- * Extracts viral claim text, platform, and category from a screenshot buffer using Gemini Vision.
- *
- * @param {Object} params
- * @param {Buffer} params.buffer - Image binary buffer
- * @param {string} params.mimetype - e.g. 'image/png', 'image/jpeg'
- * @returns {Promise<{ text: string, platform: string, category: string, isAiPowered: boolean }>}
- */
+// Extracts viral claim text, platform, and category from a screenshot buffer using Gemini Vision
 export async function extractClaimFromImage({ buffer, mimetype = 'image/jpeg' }) {
   if (!genAI) {
     // Graceful fallback when Gemini key is not configured
@@ -22,12 +15,18 @@ export async function extractClaimFromImage({ buffer, mimetype = 'image/jpeg' })
       platform: 'WHATSAPP',
       category: 'OTHER',
       isAiPowered: false,
-      note: 'Demo OCR fallback: set GEMINI_API_KEY in backend/.env to activate Gemini 1.5 Flash vision extraction.'
+      note: 'Demo OCR fallback: set GEMINI_API_KEY in backend/.env to activate Gemini vision extraction.'
     };
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const candidateModels = [
+      env.GEMINI_MODEL,
+      'gemini-3.5-flash-lite',
+      'gemini-3.5-flash',
+      'gemini-3.6-flash',
+      'gemini-flash-latest'
+    ].filter(Boolean);
 
     const prompt = `You are an expert fact-checking intake assistant. Analyze this screenshot of a social media post, WhatsApp forward, tweet, or viral headline.
 Extract the core viral assertion or claim being propagated.
@@ -49,8 +48,24 @@ Respond ONLY with a valid JSON object matching this schema:
       }
     };
 
-    const result = await model.generateContent([prompt, imagePart]);
-    const responseText = result.response.text();
+    let responseText = null;
+    let lastError = null;
+
+    for (const modelName of candidateModels) {
+      try {
+        const model = genAI.getGenerativeModel({ model: modelName });
+        const result = await model.generateContent([prompt, imagePart]);
+        responseText = result?.response?.text();
+        if (responseText) break;
+      } catch (modelErr) {
+        lastError = modelErr;
+        console.warn(`[Gemini Vision] Model ${modelName} encountered error: ${modelErr.message}. Trying next candidate...`);
+      }
+    }
+
+    if (!responseText) {
+      throw lastError || new Error('No response from Gemini vision models.');
+    }
 
     // Clean JSON response
     const jsonMatch = responseText.match(/\{[\s\S]*\}/);
@@ -81,20 +96,26 @@ Respond ONLY with a valid JSON object matching this schema:
   }
 }
 
-/**
- * Generates semantic embedding using Gemini text-embedding-004.
- * @param {string} text
- * @returns {Promise<number[]|null>}
- */
+// Generates semantic embedding using Gemini embedding model
 export async function generateEmbedding(text) {
   if (!genAI || !text) return null;
 
-  try {
-    const model = genAI.getGenerativeModel({ model: 'text-embedding-004' });
-    const result = await model.embedContent(text);
-    return result.embedding.values || null;
-  } catch (err) {
-    console.warn('[Gemini Embedding Warning]:', err.message);
-    return null;
+  const candidateModels = [
+    env.GEMINI_EMBEDDING_MODEL,
+    'gemini-embedding-001',
+    'gemini-embedding-2'
+  ].filter(Boolean);
+
+  for (const modelName of candidateModels) {
+    try {
+      const model = genAI.getGenerativeModel({ model: modelName });
+      const result = await model.embedContent(text);
+      if (result?.embedding?.values) {
+        return result.embedding.values;
+      }
+    } catch (err) {
+      console.warn(`[Gemini Embedding] Model ${modelName} error: ${err.message}. Trying next candidate...`);
+    }
   }
+  return null;
 }

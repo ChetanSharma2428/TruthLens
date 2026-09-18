@@ -1,0 +1,54 @@
+.tl-brand-logo-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  text-decoration: none;
+  line-height: 1;
+}
+
+.tl-brand-logo-svg {
+  flex-shrink: 0;
+  display: block;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 102, 255, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tl-brand-logo-wrap:hover .tl-brand-logo-svg {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 102, 255, 0.28);
+}
+
+.tl-brand-text-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.tl-brand-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #0b1e3f;
+  line-height: 1.1;
+}
+
+.tl-brand-highlight {
+  color: #0066ff;
+}
+
+.tl-brand-subtag {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #64748b;
+  margin-top: 1px;
+}
+
+/* Dark mode / footer variant */
+.tl-brand-inverted .tl-brand-title {
+  color: #ffffff;
+}
+
+.tl-brand-inverted .tl-brand-subtag {
+  color: #93c5fd;
+}

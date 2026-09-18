@@ -3,13 +3,18 @@ import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
+import compression from 'compression';
 import { env } from './config/env.js';
 import claimRoutes from './routes/claimRoutes.js';
 import reviewerRoutes from './routes/reviewerRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
+import statsRoutes from './routes/statsRoutes.js';
 import { notFoundHandler, errorHandler } from './middleware/errorMiddleware.js';
 
 const app = express();
+
+// Payload Compression (gzip / deflate for all JSON responses)
+app.use(compression({ threshold: 0 }));
 
 // Security Middleware
 app.use(helmet());
@@ -69,10 +74,19 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Client-side / CDN Cache-Control headers for public read-only requests
+app.use((req, res, next) => {
+  if (req.method === 'GET' && (req.originalUrl.startsWith('/api/claims') || req.originalUrl.startsWith('/api/stats'))) {
+    res.set('Cache-Control', 'public, max-age=15, stale-while-revalidate=30');
+  }
+  next();
+});
+
 // Mounted API Routes
 app.use('/api/claims', claimRoutes);
 app.use('/api/reviewer', reviewerRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/stats', statsRoutes);
 
 // 404 & Central Error Handling
 app.use(notFoundHandler);

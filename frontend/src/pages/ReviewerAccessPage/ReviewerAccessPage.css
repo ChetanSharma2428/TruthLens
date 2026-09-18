@@ -14,23 +14,167 @@
 
 .tl-access-container {
   width: 100%;
-  max-width: var(--max-width-content);
+  max-width: 1080px;
   margin: 0 auto;
   padding: 0 var(--space-6);
 }
 
+.tl-access-split-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-8);
+  align-items: stretch;
+}
+
+@media (min-width: 960px) {
+  .tl-access-split-layout {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-10);
+  }
+}
+
+.tl-access-form-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
 .tl-access-back {
-  max-width: 480px;
-  margin: 0 auto var(--space-6);
+  margin-bottom: var(--space-4);
 }
 
 .tl-access-back a {
   font-size: 0.8125rem;
-  font-family: var(--font-mono);
+  font-weight: 600;
   color: var(--text-secondary);
+  text-decoration: none;
   transition: color var(--transition-fast);
 }
 
 .tl-access-back a:hover {
-  color: var(--text-primary);
+  color: var(--color-brand);
 }
+
+/* Right Column: Inspirational Brand Card (Screen 11) */
+.tl-access-brand-card {
+  background: linear-gradient(145deg, #0a192f 0%, #0d284f 50%, #0052cc 100%);
+  border-radius: 20px;
+  padding: 2.75rem 2.25rem;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 16px 40px rgba(10, 25, 47, 0.25);
+}
+
+.tl-access-brand-card::before {
+  content: '';
+  position: absolute;
+  top: -80px;
+  right: -80px;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 163, 255, 0.2) 0%, rgba(0, 163, 255, 0) 70%);
+  pointer-events: none;
+}
+
+.tl-brand-card-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.tl-brand-card-logo {
+  width: 60px;
+  height: 60px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #ffffff;
+  padding: 4px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  margin-bottom: 1.5rem;
+}
+
+.tl-access-brand-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.tl-brand-card-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1.25;
+  color: #ffffff;
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.01em;
+}
+
+.tl-brand-card-desc {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: #cbd5e1;
+  margin-bottom: 2rem;
+}
+
+.tl-brand-card-perks {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+  flex: 1;
+}
+
+.tl-brand-perk-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+}
+
+.tl-perk-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.tl-brand-perk-item strong {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 0.2rem;
+}
+
+.tl-brand-perk-item span {
+  display: block;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: #94a3b8;
+}
+
+.tl-brand-card-quote {
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  padding-top: 1.25rem;
+  font-size: 0.875rem;
+  font-style: italic;
+  color: #93c5fd;
+}
+
+@media (max-width: 480px) {
+  .tl-access-brand-card {
+    padding: 1.75rem 1.25rem;
+  }
+  .tl-brand-card-title {
+    font-size: 1.4rem;
+  }
+  .tl-access-main {
+    padding: var(--space-6) 0 var(--space-10);
+  }
+}
+

@@ -4,22 +4,24 @@ import './HowItWorks.css';
 export default function HowItWorks() {
   const steps = [
     {
-      num: '01',
+      num: '1',
       title: 'Submit',
-      subtitle: 'Public Submission',
-      desc: 'Anyone can submit suspicious claims circulating on WhatsApp, X, Instagram, or the web. No user registration or account creation is required.'
+      desc: 'Share a claim you found on social media or messaging apps with source details or screenshots.'
     },
     {
-      num: '02',
-      title: 'Triage',
-      subtitle: 'Automated Risk Signals',
-      desc: 'The backend engine instantly analyzes the claim for viral danger markers: sensational urgency phrasing, aggressive uppercase shouting, and missing citations.'
+      num: '2',
+      title: 'Analyze',
+      desc: 'Our deterministic triage engine instantly checks for viral risk signals and propagation urgency.'
     },
     {
-      num: '03',
+      num: '3',
       title: 'Review',
-      subtitle: 'Human Verification',
-      desc: 'Authorized reviewers investigate credible sources and evidence, assigning a definitive verdict (Verified True, False, or Misleading) with an explanatory note.'
+      desc: 'Fact-checking journalists review authoritative primary sources and assign an editorial verdict.'
+    },
+    {
+      num: '4',
+      title: 'Inform',
+      desc: 'The verified result is shared transparently with the public with full audit provenance.'
     }
   ];
 
@@ -30,19 +32,19 @@ export default function HowItWorks() {
           <span className="tl-section-kicker">EDITORIAL PROCESS</span>
           <h2 id="how-title" className="tl-section-title">How TruthLens Works</h2>
           <p className="tl-section-lead">
-            Separating automated urgency assessment from factual human truth.
+            A simple, transparent 4-stage process to fight misinformation.
           </p>
         </div>
 
-        <div className="tl-how-grid">
-          {steps.map((step) => (
-            <div key={step.num} className="tl-how-step">
-              <div className="tl-step-top">
-                <span className="tl-step-num">{step.num}</span>
-                <span className="tl-step-subtitle">{step.subtitle}</span>
+        <div className="tl-how-timeline">
+          {steps.map((step, idx) => (
+            <div key={step.num} className="tl-how-step-col">
+              <div className="tl-step-circle-badge">
+                {step.num}
               </div>
-              <h3 className="tl-step-title">{step.title}</h3>
-              <p className="tl-step-desc">{step.desc}</p>
+              {idx < steps.length - 1 && <div className="tl-step-connector-line" />}
+              <h3 className="tl-pipeline-step-title">{step.title}</h3>
+              <p className="tl-pipeline-step-desc">{step.desc}</p>
             </div>
           ))}
         </div>

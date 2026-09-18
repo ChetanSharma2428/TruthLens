@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import Badge from '../../common/Badge/Badge';
 import './RiskFlags.css';
 
-export default function RiskFlags({
+function RiskFlags({
   flags = [],
   riskLevel = 'NORMAL',
   metrics = null,
@@ -127,3 +127,5 @@ export default function RiskFlags({
     </div>
   );
 }
+
+export default memo(RiskFlags);

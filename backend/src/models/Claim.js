@@ -121,9 +121,14 @@ const claimSchema = new mongoose.Schema(
   }
 );
 
-// Indexes supporting feed, filter, and reviewer queue queries
+// High-Performance Indexes supporting feed, filter, text search, and reviewer queues
 claimSchema.index({ submittedAt: -1 });
 claimSchema.index({ status: 1, submittedAt: -1 });
 claimSchema.index({ category: 1, status: 1, submittedAt: -1 });
+claimSchema.index({ platform: 1, status: 1, submittedAt: -1 });
+claimSchema.index({ riskLevel: 1, submittedAt: -1 });
+claimSchema.index({ reviewedAt: -1 });
+claimSchema.index({ status: 1, reviewedAt: -1 });
+claimSchema.index({ text: 'text' });
 
 export const Claim = mongoose.model('Claim', claimSchema);

@@ -19,10 +19,9 @@ export default function SubmitClaimPage() {
           <div className="tl-submit-layout">
             <div className="tl-submit-form-col">
               <header className="tl-submit-header">
-                <span className="tl-submit-kicker">COMMUNITY TRIAGE</span>
                 <h1 className="tl-submit-title">Submit a Claim for Triage</h1>
                 <p className="tl-submit-lead">
-                  Enter circulating claims from social networks or messaging apps. Our backend triage engine will identify urgency risk patterns and route the claim to our verification queue.
+                  Help us fight misinformation. Paste or describe a claim you found on social media or messaging apps. Our automated triage engine will analyze it for potential risk signals.
                 </p>
               </header>
 
@@ -30,26 +29,53 @@ export default function SubmitClaimPage() {
             </div>
 
             <aside className="tl-submit-sidebar" aria-label="Submission Guidelines">
+              {/* Card 1: What Happens After Submission */}
               <div className="tl-sidebar-card">
                 <h2 className="tl-sidebar-title">What Happens After Submission?</h2>
-                <ol className="tl-sidebar-steps">
-                  <li>
-                    <strong>Deterministic Triage:</strong> The backend instantly checks for sensational wording, aggressive capitalization, and source attribution.
-                  </li>
-                  <li>
-                    <strong>Public Feed:</strong> Your claim is immediately logged with a prominent <code>UNVERIFIED</code> status indicator.
-                  </li>
-                  <li>
-                    <strong>Reviewer Queue:</strong> Reviewers audit credible evidence and assign an authoritative fact-checking verdict with an explanatory note.
-                  </li>
-                </ol>
+                <div className="tl-sidebar-step-item">
+                  <div className="tl-step-num-pill">1</div>
+                  <div>
+                    <strong>Deterministic Triage</strong>
+                    <p>We analyze the text for viral risk signals and propagation urgency.</p>
+                  </div>
+                </div>
+                <div className="tl-sidebar-step-item">
+                  <div className="tl-step-num-pill">2</div>
+                  <div>
+                    <strong>Public Feed</strong>
+                    <p>Your claim is immediately visible with an UNVERIFIED status indicator.</p>
+                  </div>
+                </div>
+                <div className="tl-sidebar-step-item">
+                  <div className="tl-step-num-pill">3</div>
+                  <div>
+                    <strong>Reviewer Queue</strong>
+                    <p>Our team verifies authoritative sources and assigns a final editorial verdict.</p>
+                  </div>
+                </div>
               </div>
 
-              <div className="tl-sidebar-card tl-sidebar-card-subtle">
-                <h2 className="tl-sidebar-title">Important Note</h2>
+              {/* Card 2: Important Note */}
+              <div className="tl-sidebar-card tl-sidebar-warning-card">
+                <div className="tl-warning-card-header">
+                  <span className="tl-warning-card-icon">⚠️</span>
+                  <h3 className="tl-warning-card-title">Important Note</h3>
+                </div>
                 <p className="tl-sidebar-text">
-                  High Risk ratings do <strong>not</strong> imply a claim is false. Risk measures sensational propagation signals. Final factual verdicts are strictly assigned by human review.
+                  High-risk ratings do <strong>not</strong> imply a claim is false. Final factual verdicts are assigned by human reviewers after examining primary evidence.
                 </p>
+              </div>
+
+              {/* Card 3: Together for a Safer Internet (Image 2 - Screen 3) */}
+              <div className="tl-sidebar-card tl-together-card">
+                <div className="tl-together-icon-wrap" aria-hidden="true">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="rgba(0, 102, 255, 0.25)" stroke="#38bdf8" />
+                    <polyline points="9 12 11 14 15 10" stroke="#ffffff" strokeWidth="2.2" />
+                  </svg>
+                </div>
+                <h3 className="tl-together-title">Together for a Safer Internet</h3>
+                <p className="tl-together-desc">Report. Verify. Share facts.</p>
               </div>
             </aside>
           </div>

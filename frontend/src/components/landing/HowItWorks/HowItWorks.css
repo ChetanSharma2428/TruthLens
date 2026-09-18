@@ -1,6 +1,6 @@
 .tl-how {
-  padding: var(--space-16) 0;
-  background-color: var(--bg-surface);
+  padding: 4.5rem 0;
+  background-color: #ffffff;
   border-bottom: 1px solid var(--border-subtle);
 }
 
@@ -11,51 +11,95 @@
 }
 
 .tl-section-header {
-  max-width: 680px;
-  margin-bottom: var(--space-12);
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto 3.5rem;
 }
 
 .tl-section-kicker {
-  display: block;
-  font-family: var(--font-mono);
+  display: inline-block;
   font-size: 0.75rem;
   font-weight: 700;
-  color: var(--text-muted);
-  letter-spacing: 0.08em;
-  margin-bottom: var(--space-2);
+  color: #0066ff;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.5rem;
   text-transform: uppercase;
 }
 
 .tl-section-title {
-  font-family: var(--font-serif);
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: var(--space-3);
-}
-
-@media (min-width: 768px) {
-  .tl-section-title {
-    font-size: 2.25rem;
-  }
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: #0b1e3f;
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.02em;
 }
 
 .tl-section-lead {
   font-size: 1.0625rem;
-  color: var(--text-secondary);
+  color: #64748b;
   line-height: 1.5;
 }
 
-.tl-how-grid {
+.tl-how-timeline {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-6);
+  gap: 2rem;
+  position: relative;
 }
 
 @media (min-width: 768px) {
-  .tl-how-grid {
-    grid-template-columns: repeat(3, 1fr);
+  .tl-how-timeline {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
   }
+}
+
+.tl-how-step-col {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: all var(--transition-base);
+}
+
+.tl-how-step-col:hover {
+  transform: translateY(-4px);
+  border-color: #93c5fd;
+  box-shadow: 0 10px 25px -4px rgba(0, 102, 255, 0.1);
+  background: #ffffff;
+}
+
+.tl-step-circle-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #0066ff;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 4px 10px rgba(0, 102, 255, 0.3);
+}
+
+.tl-pipeline-step-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 0.5rem;
+}
+
+.tl-pipeline-step-desc {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #64748b;
 }
 
 .tl-how-step {

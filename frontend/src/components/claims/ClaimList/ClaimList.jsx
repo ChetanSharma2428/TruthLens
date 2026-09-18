@@ -1,5 +1,6 @@
 import React from 'react';
 import ClaimCard from '../ClaimCard/ClaimCard';
+import SkeletonCard from '../../common/SkeletonCard/SkeletonCard';
 import LoadingSpinner from '../../common/LoadingSpinner/LoadingSpinner';
 import ErrorState from '../../common/ErrorState/ErrorState';
 import EmptyState from '../../common/EmptyState/EmptyState';
@@ -15,7 +16,13 @@ export default function ClaimList({
   onRetry
 }) {
   if (loading) {
-    return <LoadingSpinner message="Fetching claims feed..." size="lg" />;
+    return (
+      <div className="tl-claim-list-wrapper" aria-busy="true" aria-label="Loading claims feed">
+        <div className="tl-claim-grid">
+          <SkeletonCard count={4} />
+        </div>
+      </div>
+    );
   }
 
   if (error) {

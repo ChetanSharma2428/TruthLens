@@ -9,6 +9,8 @@ export const env = {
   FRONTEND_ORIGIN: process.env.FRONTEND_ORIGIN || 'http://localhost:5173',
   SESSION_SECRET: process.env.SESSION_SECRET || 'truthlens_demo_session_secret_key_2026',
   GEMINI_API_KEY: process.env.GEMINI_API_KEY || null,
+  GEMINI_MODEL: process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite',
+  GEMINI_EMBEDDING_MODEL: process.env.GEMINI_EMBEDDING_MODEL || 'gemini-embedding-001',
   CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME || null,
   CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY || null,
   CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET || null,

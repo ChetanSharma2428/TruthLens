@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { memo } from 'react';
 import Badge from '../../common/Badge/Badge';
 import './StatusBadge.css';
 
-export default function StatusBadge({ status = 'UNVERIFIED', size = 'md', className = '' }) {
+function StatusBadge({ status = 'UNVERIFIED', size = 'md', className = '' }) {
   const statusConfig = {
     VERIFIED_TRUE: {
       label: 'Verified True',
@@ -32,3 +32,5 @@ export default function StatusBadge({ status = 'UNVERIFIED', size = 'md', classN
     </span>
   );
 }
+
+export default memo(StatusBadge);

@@ -66,7 +66,7 @@
 
 .tl-dashboard-title {
   font-family: var(--font-serif);
-  font-size: 2.25rem;
+  font-size: clamp(1.6rem, 4vw, 2.25rem);
   font-weight: 700;
   color: var(--text-primary);
   margin-bottom: var(--space-1);
@@ -99,6 +99,78 @@
   color: var(--color-brand);
 }
 
+/* 4 Metrics Row (Image 2 - Screen 5) */
+.tl-reviewer-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
+}
+
+@media (max-width: 500px) {
+  .tl-reviewer-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 768px) {
+  .tl-reviewer-metrics-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.tl-rev-metric-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.tl-rev-metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+}
+
+.tl-rev-metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+}
+
+.tl-metric-orange::before { background: #f97316; }
+.tl-metric-green::before { background: #10b981; }
+.tl-metric-blue::before { background: #0066ff; }
+.tl-metric-purple::before { background: #8b5cf6; }
+
+.tl-rev-metric-num {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.tl-metric-orange .tl-rev-metric-num { color: #ea580c; }
+.tl-metric-green .tl-rev-metric-num { color: #059669; }
+.tl-metric-blue .tl-rev-metric-num { color: #0066ff; }
+.tl-metric-purple .tl-rev-metric-num { color: #7c3aed; }
+
+.tl-rev-metric-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
 /* Toast Banner */
 .tl-dashboard-banner {
   display: flex;
@@ -121,6 +193,47 @@
   font-size: 1rem;
   cursor: pointer;
   color: inherit;
+  background: none;
+  border: none;
+}
+
+.tl-column-sub {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  display: block;
+  margin-top: 2px;
+}
+
+/* Risk Filter Tabs (Screen 6) */
+.tl-risk-filter-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.tl-risk-tab-btn {
+  padding: 0.4rem 0.85rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  border: 1px solid var(--border-default);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tl-risk-tab-btn:hover {
+  border-color: var(--color-brand);
+  color: var(--color-brand);
+}
+
+.tl-risk-tab-btn.active {
+  background: var(--color-brand);
+  border-color: var(--color-brand);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 102, 255, 0.25);
 }
 
 /* Grid Layout */

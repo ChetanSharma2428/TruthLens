@@ -1,11 +1,7 @@
 import { Claim } from '../models/Claim.js';
 import { generateEmbedding } from './geminiService.js';
 
-/**
- * Tokenizes text into normalized word set.
- * @param {string} text
- * @returns {Set<string>}
- */
+// Tokenizes text into normalized word set
 function tokenize(text) {
   return new Set(
     text
@@ -16,12 +12,7 @@ function tokenize(text) {
   );
 }
 
-/**
- * Computes Jaccard Similarity coefficient between two texts.
- * @param {string} textA
- * @param {string} textB
- * @returns {number} Value between 0.0 and 1.0
- */
+// Computes Jaccard Similarity coefficient between two texts (0.0 to 1.0)
 export function computeTextSimilarity(textA, textB) {
   if (!textA || !textB) return 0;
 
@@ -36,12 +27,7 @@ export function computeTextSimilarity(textA, textB) {
   return intersection.size / union.size;
 }
 
-/**
- * Checks if a submitted text is a duplicate or near-duplicate of an existing claim in MongoDB.
- *
- * @param {string} text
- * @returns {Promise<{ isDuplicate: boolean, similarity: number, matchedClaim: Object|null }>}
- */
+// Checks if a submitted text is a duplicate or near-duplicate of an existing claim
 export async function checkDuplicateClaim(text) {
   if (!text || text.trim().length < 5) {
     return { isDuplicate: false, similarity: 0, matchedClaim: null };

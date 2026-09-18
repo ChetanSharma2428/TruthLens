@@ -97,11 +97,15 @@ export default function ClaimForm() {
   const liveTriage = computeLiveTriage();
 
   // Screenshot Upload & OCR Extraction Handler
-  const handleImageFileChange = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const [isDragging, setIsDragging] = useState(false);
 
-    // Preview
+  const processImageFile = async (file) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setOcrStatus('Please select an image file (PNG, JPG, WEBP).');
+      return;
+    }
+
     const objectUrl = URL.createObjectURL(file);
     setImagePreview(objectUrl);
     setUploadingImage(true);
@@ -120,14 +124,45 @@ export default function ClaimForm() {
         setOcrStatus(
           data.isAiPowered
             ? '✓ Text & Platform extracted via Gemini Vision.'
-            : '✓ Image uploaded. (Configure GEMINI_API_KEY for automatic multimodal OCR)'
+            : '✓ Image uploaded to Cloudinary CDN.'
         );
+      } else if (data.imageUrl) {
+        setFormData((prev) => ({
+          ...prev,
+          imageUrl: data.imageUrl
+        }));
+        setOcrStatus('✓ Image uploaded to Cloudinary CDN.');
       }
     } catch (err) {
       setOcrStatus('Image upload failed: ' + (err.message || 'Please try again.'));
     } finally {
       setUploadingImage(false);
     }
+  };
+
+  const handleImageFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) processImageFile(file);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) processImageFile(file);
   };
 
   const validate = () => {
@@ -247,48 +282,6 @@ export default function ClaimForm() {
         </div>
       )}
 
-      {/* FEATURE 1 ENHANCEMENT: Screenshot OCR Intake Zone */}
-      <div className="tl-ocr-intake-zone">
-        <div className="tl-ocr-header">
-          <span className="tl-ocr-title">✦ Screenshot Intake (Gemini Vision OCR & Cloudinary)</span>
-          <button
-            type="button"
-            className="tl-ocr-upload-btn"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploadingImage}
-          >
-            {uploadingImage ? 'Processing Image...' : '📷 Upload Screenshot'}
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/png, image/jpeg, image/webp"
-            className="sr-only"
-            onChange={handleImageFileChange}
-          />
-        </div>
-
-        {imagePreview && (
-          <div className="tl-ocr-preview-bar">
-            <img src={imagePreview} alt="Screenshot thumbnail" className="tl-ocr-thumb" />
-            <div className="tl-ocr-status-wrap">
-              <span className="tl-ocr-status-text">{ocrStatus}</span>
-              <button
-                type="button"
-                className="tl-ocr-remove-btn"
-                onClick={() => {
-                  setImagePreview(null);
-                  setOcrStatus(null);
-                  setFormData((prev) => ({ ...prev, imageUrl: null }));
-                }}
-              >
-                Remove
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-
       {/* FEATURE 1 ENHANCEMENT: Near-Duplicate Warning Banner */}
       {duplicateCheck && duplicateCheck.matchedClaim && (
         <div className="tl-duplicate-alert" role="alert">
@@ -361,86 +354,97 @@ export default function ClaimForm() {
         </p>
       </div>
 
-      <div className="tl-form-row">
-        {/* Source Platform */}
-        <div className="tl-form-group">
-          <label htmlFor="claim-platform" className="tl-form-label">
-            Circulating Platform <span className="tl-required">*</span>
-          </label>
-          <select
-            id="claim-platform"
-            className="tl-form-select"
-            value={formData.platform}
-            onChange={(e) => setFormData({ ...formData, platform: e.target.value })}
-            disabled={submitting}
-          >
-            <option value="WHATSAPP">WhatsApp</option>
-            <option value="X">X (Twitter)</option>
-            <option value="INSTAGRAM">Instagram</option>
-            <option value="OTHER">Other / Web</option>
-          </select>
-        </div>
-
-        {/* Category */}
-        <div className="tl-form-group">
-          <div className="tl-label-row">
-            <label htmlFor="claim-category" className="tl-form-label">
-              Category <span className="tl-required">*</span>
-            </label>
-            {formData.text.trim().length >= 5 && (
+      {/* 2. Circulating Platform (Image 2 - Screen 3) */}
+      <div className="tl-form-group">
+        <label className="tl-form-label">
+          Circulating Platform <span className="tl-required">*</span>
+        </label>
+        <div className="tl-platform-pills-selector" role="radiogroup" aria-label="Circulating Platform">
+          {[
+            { id: 'WHATSAPP', label: 'WhatsApp', icon: '💬' },
+            { id: 'X', label: 'X (Twitter)', icon: '𝕏' },
+            { id: 'FACEBOOK', label: 'Facebook', icon: '👤' },
+            { id: 'INSTAGRAM', label: 'Instagram', icon: '📷' },
+            { id: 'YOUTUBE', label: 'YouTube', icon: '▶️' },
+            { id: 'OTHER', label: 'Other', icon: '🌐' }
+          ].map((p) => {
+            const isSelected = formData.platform === p.id;
+            return (
               <button
+                key={p.id}
                 type="button"
-                className="tl-suggest-category-btn"
-                onClick={async () => {
-                  try {
-                    setSuggestingCategory(true);
-                    const res = await suggestClaimCategory(formData.text);
-                    setCategorySuggestion(res);
-                  } catch {
-                    // Ignore suggestion failure, optional feature
-                  } finally {
-                    setSuggestingCategory(false);
-                  }
-                }}
-                disabled={suggestingCategory}
+                role="radio"
+                aria-checked={isSelected}
+                className={`tl-platform-pill-btn ${isSelected ? 'selected' : ''}`}
+                onClick={() => setFormData({ ...formData, platform: p.id })}
               >
-                {suggestingCategory ? 'Analyzing...' : '✦ Suggest Category'}
+                <span className="tl-platform-pill-icon">{p.icon}</span>
+                <span>{p.label}</span>
               </button>
-            )}
-          </div>
-          <select
-            id="claim-category"
-            className="tl-form-select"
-            value={formData.category}
-            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-            disabled={submitting}
-          >
-            <option value="POLITICS">Politics</option>
-            <option value="HEALTH">Health</option>
-            <option value="FINANCE">Finance</option>
-            <option value="OTHER">Other</option>
-          </select>
-
-          {categorySuggestion && (
-            <div className="tl-category-suggestion-pill">
-              <span className="tl-suggestion-kicker">ADVISORY SUGGESTION:</span>
-              <span className="tl-suggestion-value">{categorySuggestion.suggestedCategory}</span>
-              <button
-                type="button"
-                className="tl-apply-suggestion-btn"
-                onClick={() => {
-                  setFormData({ ...formData, category: categorySuggestion.suggestedCategory });
-                  setCategorySuggestion(null);
-                }}
-              >
-                Apply
-              </button>
-            </div>
-          )}
+            );
+          })}
         </div>
       </div>
 
-      {/* Source URL (optional) */}
+      {/* 3. Category */}
+      <div className="tl-form-group">
+        <div className="tl-label-row">
+          <label htmlFor="claim-category" className="tl-form-label">
+            Category <span className="tl-required">*</span>
+          </label>
+          {formData.text.trim().length >= 5 && (
+            <button
+              type="button"
+              className="tl-suggest-category-btn"
+              onClick={async () => {
+                try {
+                  setSuggestingCategory(true);
+                  const res = await suggestClaimCategory(formData.text);
+                  setCategorySuggestion(res);
+                } catch {
+                  // Optional
+                } finally {
+                  setSuggestingCategory(false);
+                }
+              }}
+              disabled={suggestingCategory}
+            >
+              {suggestingCategory ? 'Analyzing...' : '✦ AI Suggest Category'}
+            </button>
+          )}
+        </div>
+        <select
+          id="claim-category"
+          className="tl-form-select"
+          value={formData.category}
+          onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+          disabled={submitting}
+        >
+          <option value="POLITICS">Politics</option>
+          <option value="HEALTH">Health</option>
+          <option value="FINANCE">Finance</option>
+          <option value="OTHER">Other</option>
+        </select>
+
+        {categorySuggestion && (
+          <div className="tl-category-suggestion-pill">
+            <span className="tl-suggestion-kicker">ADVISORY SUGGESTION:</span>
+            <span className="tl-suggestion-value">{categorySuggestion.suggestedCategory}</span>
+            <button
+              type="button"
+              className="tl-apply-suggestion-btn"
+              onClick={() => {
+                setFormData({ ...formData, category: categorySuggestion.suggestedCategory });
+                setCategorySuggestion(null);
+              }}
+            >
+              Apply
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* 4. Source URL (optional) */}
       <div className="tl-form-group">
         <label htmlFor="claim-source" className="tl-form-label">
           Source Link <span className="tl-optional">(Optional)</span>
@@ -460,14 +464,124 @@ export default function ClaimForm() {
         </p>
       </div>
 
+      {/* 5. Upload Screenshot Dropzone (Image 2 - Screen 3) */}
+      <div className="tl-form-group">
+        <label className="tl-form-label">
+          Upload Screenshot <span className="tl-optional">(Optional)</span>
+        </label>
+
+        {!imagePreview ? (
+          <div
+            className={`tl-dropzone-box ${isDragging ? 'dragging' : ''} ${uploadingImage ? 'uploading' : ''}`}
+            onClick={() => !uploadingImage && fileInputRef.current?.click()}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === 'Enter' && !uploadingImage && fileInputRef.current?.click()}
+            aria-label="Upload screenshot dropzone"
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/png, image/jpeg, image/webp"
+              className="sr-only"
+              onChange={handleImageFileChange}
+              disabled={uploadingImage}
+            />
+            <div className="tl-dropzone-icon-wrap" aria-hidden="true">
+              {uploadingImage ? (
+                <svg className="tl-spin" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#0066ff" strokeWidth="2.4">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeOpacity="0.2" strokeWidth="2.5" />
+                  <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+                </svg>
+              ) : (
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#0066ff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" />
+                  <path d="M12 12v9" />
+                  <path d="m16 16-4-4-4 4" />
+                </svg>
+              )}
+            </div>
+            <p className="tl-dropzone-main">
+              {uploadingImage ? (
+                <strong>Extracting claim with Gemini Vision...</strong>
+              ) : (
+                <>
+                  <strong>Drag & drop an image here</strong>, or <span className="tl-dropzone-link">click to upload</span>
+                </>
+              )}
+            </p>
+            <span className="tl-dropzone-sub">
+              Supports JPG, PNG, WEBP (Max 10MB) · Auto Gemini Vision OCR &amp; Cloudinary CDN
+            </span>
+          </div>
+        ) : (
+          <div className="tl-ocr-preview-bar">
+            <img src={imagePreview} alt="Screenshot thumbnail" className="tl-ocr-thumb" />
+            <div className="tl-ocr-status-wrap">
+              <span className="tl-ocr-status-text">{ocrStatus || 'Image attached for evidence'}</span>
+              <div className="tl-ocr-actions-row">
+                <button
+                  type="button"
+                  className="tl-ocr-reupload-btn"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingImage}
+                >
+                  Change Image
+                </button>
+                <button
+                  type="button"
+                  className="tl-ocr-remove-btn"
+                  onClick={() => {
+                    setImagePreview(null);
+                    setOcrStatus(null);
+                    setFormData((prev) => ({ ...prev, imageUrl: null }));
+                    if (fileInputRef.current) fileInputRef.current.value = '';
+                  }}
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/png, image/jpeg, image/webp"
+              className="sr-only"
+              onChange={handleImageFileChange}
+              disabled={uploadingImage}
+            />
+          </div>
+        )}
+      </div>
+
       <div className="tl-form-actions">
         <Button
           type="submit"
           variant="primary"
           size="lg"
           loading={submitting}
+          className="tl-submit-main-btn"
         >
-          {submitting ? 'Analyzing & Submitting...' : 'Submit Claim'}
+          <span className="tl-submit-btn-inner">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <line x1="22" y1="2" x2="11" y2="13" />
+              <polygon points="22 2 15 22 11 13 2 9 22 2" />
+            </svg>
+            <span>{submitting ? 'Analyzing & Submitting...' : 'Submit Claim'}</span>
+          </span>
         </Button>
       </div>
     </form>

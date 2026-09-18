@@ -1,50 +1,54 @@
-# TruthLens — Architecture & Product Decisions (DECISIONS.md)
+# Architectural & Product Decisions (DECISIONS.md)
 
-This document records the foundational product and technical decisions established for TruthLens.
-
----
-
-## 1. Core Decision Points (DPs)
-
-### DP1 — Feed Order
-- **Decision:** The public feed defaults to **Newest First** (`submittedAt DESC`). Sorting and filtering are strictly decoupled controls.
-- **Rationale:** A fast-moving misinformation monitoring stream requires immediate visibility of fresh incoming claims. Visitors can filter by category or status without losing their chosen sort order, and default browsing displays the most recently triaged activity.
-- **Implementation:** GET `/api/claims?sort=newest&category=...&status=...`.
-
-### DP2 — Unverified Claim Visibility
-- **Decision:** Claims with `status = UNVERIFIED` remain publicly visible in the main feed, rendered with an unmistakable, prominent **UNVERIFIED** status badge.
-- **Rationale:** Fact-checking platforms must operate transparently. Hiding claims until verified creates black-box triage and delays public awareness of emerging rumors. However, unverified items must never be mistaken for verified conclusions; the UI prominently separates risk triage flags from human factual verdicts.
-- **Implementation:** Default feed query includes all statuses unless explicitly filtered. The `UNVERIFIED` badge uses distinct neutral/attention styling with clear textual labelling.
-
-### DP3 — Claim Immutability
-- **Decision:** Once submitted, core claim fields (`text`, `platform`, `category`, `sourceUrl`) are permanently immutable.
-- **Rationale:** Reviewer decisions (`VERIFIED_TRUE`, `FALSE`, `MISLEADING`) and explanatory notes are tethered to the exact phrasing and metadata evaluated at that moment in time. Allowing edits would compromise fact-checking audit trails. Any corrected or altered text must be submitted as a separate new claim.
-- **Implementation:** No `PUT` or `PATCH` endpoints exist for claim content. The review endpoint (`POST /api/reviews/:claimId`) updates only review-specific audit fields (`status`, `reviewerNote`, `reviewedAt`, `reviewerSessionId`).
+This document details the key architectural and product decisions for **TruthLens — Misinformation Triage Platform**, addressing the three core Decision Points.
 
 ---
 
-## 2. API Contract & Security Decisions
-
-### API Contract Baseline
-- The API follows the specification detailed in `docs/5 - apiSpec.md`.
-- Endpoints follow REST conventions with JSON payloads and uniform envelope structures (`{ success: true, data: ... }` / `{ success: false, error: ... }`).
-- Authoritative backend rule: Client requests can never supply `flags`, `riskLevel`, `status`, `submittedAt`, or `reviewedAt`. All calculations and lifecycle timestamps are generated server-side.
-
-### Reviewer Authentication Model
-- Public registration and login are intentionally omitted as public accounts are not required.
-- Reviewer authentication is governed by a secure demo access code (`REVIEWER_ACCESS_CODE`) maintained server-side in environment variables.
-- Upon successful validation (`POST /api/reviewer/access`), the server establishes an HTTP-only, SameSite cookie containing a signed reviewer token/session.
-- No secrets or reviewer keys are ever exposed in frontend client bundles.
+## DP1 · Feed Order
+* **Chosen Approach:** **Recency (Newest First)** by default (`submittedAt DESC`), with user controls to re-order by **Highest Risk First** or **Status**.
+* **Why:** Misinformation travels at viral speeds, so users and fact-checkers need immediate visibility into newly emerging claims circulating across platforms. Defaulting to recency ensures fresh rumors are triaged right away instead of being buried under older items. Sorting controls are decoupled from category and status filters so users can view the latest submissions while retaining the flexibility to re-rank by risk severity at any point.
 
 ---
 
-## 3. UI/UX & Styling Baseline
+## DP2 · Visibility
+* **Chosen Approach:** **Unverified claims are publicly visible immediately** upon submission, clearly labeled with a prominent `UNVERIFIED` badge.
+* **Why:** The platform operates with complete transparency rather than acting as a black-box filter that withholds incoming reports. Holding claims back until review would introduce critical information delays during breaking events when public awareness is most urgent. To prevent confusion, unverified claims feature distinct neutral styling that clearly separates automated risk heuristics from human factual verdicts (`Verified True`, `False`, `Misleading`).
 
-### Editorial Newsroom Visual Language
-- Visual design follows the principles in `docs/7 - desing.md`: restrained, calm, high-density editorial styling.
-- Zero "vibecoding" elements: no gratuitous glowing gradients, no neon accents, no floating glassmorphic cards, no fake metrics/counters, and no generic AI illustrations.
-- Color semantics are strictly mapped to factual states (`VERIFIED_TRUE` = emerald positive, `FALSE` = crimson negative, `MISLEADING` = amber warning, `UNVERIFIED` = slate neutral, `HIGH RISK` = burnt orange alert). Statuses always include clear text labels for accessibility.
+---
 
-### Component-Level CSS Architecture Rule
-- Every React component has its own dedicated `.css` stylesheet residing in its own component directory (`Component/Component.jsx` + `Component/Component.css`).
-- Monolithic stylesheets are prohibited. Global CSS is strictly restricted to design tokens, font definitions, CSS resets, and global accessibility utilities.
+## DP3 · Editing
+* **Chosen Approach:** **Claims are strictly immutable after submission**; editing is prohibited.
+* **Why:** A dependable fact-checking audit trail requires that human verdicts, reviewer notes, and automated risk flags remain permanently linked to the exact wording evaluated at submission. Allowing text to be edited post-submission would create a severe exploit where benign text is verified and subsequently swapped for harmful misinformation. If a claim contains a mistake or new phrasing emerges, it must be submitted as a separate new claim with its own independent triage timeline.
+
+---
+
+## Standard API Implementation
+I have implemented the standard REST API for this track. All 5 core features and decision points can be evaluated via standard REST endpoints or through the web interface.
+
+---
+
+## API Endpoints Reference
+
+### Public Endpoints
+| Method | Endpoint | Description (In Brief) |
+|---|---|---|
+| `POST` | `/api/claims` | Submits a new claim and executes automated risk triage. |
+| `GET` | `/api/claims` | Fetches public feed with sorting, filtering, and pagination. |
+| `GET` | `/api/claims/:id` | Returns complete claim detail, audit timeline, and reviewer verdict. |
+| `POST` | `/api/claims/check-duplicate` | Checks text similarity to detect duplicate viral rumors. |
+| `POST` | `/api/claims/extract-from-image` | Extracts claim text, platform, and category from screenshot via OCR. |
+| `POST` | `/api/claims/suggest-category` | Suggests editorial category based on claim keywords. |
+| `POST` | `/api/claims/analyze-risk` | Evaluates heuristic virality flags and returns risk score. |
+| `GET` | `/api/stats` | Returns live platform metrics and trending topics from database. |
+
+### Reviewer Workflow Endpoints (Direct Access — No Login Required)
+| Method | Endpoint | Description (In Brief) |
+|---|---|---|
+| `GET` | `/api/reviews/pending` | Fetches queue of unverified claims prioritized by risk level. |
+| `POST` | `/api/reviews/:claimId` | Submits human verdict (`Verified True`, `False`, `Misleading`) with explanation note. |
+| `POST` | `/api/reviews/:claimId/lock` | Acquires 10-minute collision lock to prevent simultaneous reviews. |
+| `POST` | `/api/reviews/:claimId/unlock` | Releases active collision lock on a claim. |
+| `GET` | `/api/reviews/:claimId/research-assistance` | Generates targeted search queries to assist fact-checkers. |
+
+---
+

@@ -2,10 +2,7 @@ import Redis from 'ioredis';
 import { env } from './env.js';
 import { logger } from '../utils/logger.js';
 
-/**
- * In-memory fallback cache in case Redis is not running or unconfigured.
- * Structure: Map<key, { value: any, expiresAt: number | null }>
- */
+// In-memory fallback cache in case Redis is not running or unconfigured
 const memoryCache = new Map();
 
 let redisClient = null;
@@ -57,9 +54,7 @@ if (redisTarget) {
   logger.info('No REDIS_URL configured; operating with resilient in-memory cache fallback.');
 }
 
-/**
- * Clean expired keys from memory cache periodically
- */
+// Clean expired keys from memory cache periodically
 setInterval(() => {
   const now = Date.now();
   for (const [key, entry] of memoryCache.entries()) {
@@ -69,19 +64,12 @@ setInterval(() => {
   }
 }, 60000).unref();
 
-/**
- * Checks whether Redis is actively connected.
- * @returns {boolean}
- */
+// Checks whether Redis is actively connected
 export function isRedisAvailable() {
   return isConnected && redisClient !== null && redisClient.status === 'ready';
 }
 
-/**
- * Retrieves a cached value by key from Redis or in-memory fallback.
- * @param {string} key
- * @returns {Promise<any|null>}
- */
+// Retrieves a cached value by key from Redis or in-memory fallback
 export async function cacheGet(key) {
   if (isRedisAvailable()) {
     try {
@@ -107,13 +95,7 @@ export async function cacheGet(key) {
   return entry.value;
 }
 
-/**
- * Sets a key-value pair in Redis or in-memory fallback with TTL in seconds.
- * @param {string} key
- * @param {any} value
- * @param {number} [ttlSeconds=3600] Default 1 hour
- * @returns {Promise<boolean>}
- */
+// Sets a key-value pair in Redis or in-memory fallback with TTL in seconds
 export async function cacheSet(key, value, ttlSeconds = 3600) {
   const serialized = JSON.stringify(value);
 
@@ -136,11 +118,7 @@ export async function cacheSet(key, value, ttlSeconds = 3600) {
   return true;
 }
 
-/**
- * Deletes a key from cache.
- * @param {string} key
- * @returns {Promise<boolean>}
- */
+// Deletes a key from cache
 export async function cacheDel(key) {
   memoryCache.delete(key);
 
@@ -156,9 +134,44 @@ export async function cacheDel(key) {
   return true;
 }
 
-/**
- * Clears all memory cache (primarily useful for unit testing).
- */
+// Deletes keys matching pattern (e.g. 'feed:*') from cache
+export async function cacheDelPattern(pattern) {
+  const regex = new RegExp('^' + pattern.replace(/\*/g, '.*'));
+  for (const key of memoryCache.keys()) {
+    if (regex.test(key)) {
+      memoryCache.delete(key);
+    }
+  }
+
+  if (isRedisAvailable()) {
+    try {
+      const keys = await redisClient.keys(pattern);
+      if (keys.length > 0) {
+        await redisClient.del(...keys);
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+// Clears all memory cache
 export function clearMemoryCache() {
   memoryCache.clear();
+}
+
+// Closes Redis connection
+export async function closeRedis() {
+  if (redisClient) {
+    try {
+      await redisClient.quit();
+    } catch {
+      try {
+        redisClient.disconnect();
+      } catch {}
+    }
+  }
 }

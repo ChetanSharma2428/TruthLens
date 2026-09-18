@@ -77,18 +77,21 @@ export default function ReviewPanel({ claim, onReviewSuccess, onClose }) {
     {
       value: 'VERIFIED_TRUE',
       label: 'Verified True',
+      icon: '✓',
       desc: 'Claim is substantiated by credible official sources and primary evidence.',
       styleClass: 'tl-choice-true'
     },
     {
       value: 'FALSE',
       label: 'False',
+      icon: '✕',
       desc: 'Claim is demonstrably fabricated, contradicted by official records.',
       styleClass: 'tl-choice-false'
     },
     {
       value: 'MISLEADING',
       label: 'Misleading',
+      icon: '⚠️',
       desc: 'Claim contains genuine elements stripped of essential context or exaggerated.',
       styleClass: 'tl-choice-misleading'
     }
@@ -263,7 +266,10 @@ export default function ReviewPanel({ claim, onReviewSuccess, onClose }) {
                 />
                 <div className="tl-verdict-radio-mark" aria-hidden="true" />
                 <div className="tl-verdict-option-content">
-                  <div className="tl-verdict-option-label">{opt.label}</div>
+                  <div className="tl-verdict-option-label">
+                    <span className="tl-verdict-icon-badge">{opt.icon}</span>
+                    <span>{opt.label}</span>
+                  </div>
                   <div className="tl-verdict-option-desc">{opt.desc}</div>
                 </div>
               </label>

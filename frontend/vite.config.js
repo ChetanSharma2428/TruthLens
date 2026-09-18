@@ -12,5 +12,26 @@ export default defineConfig({
         changeOrigin: true
       }
     }
+  },
+  build: {
+    minify: true,
+    cssMinify: true,
+    sourcemap: false,
+    chunkSizeWarningLimit: 500,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
+              return 'vendor-react';
+            }
+            if (id.includes('axios')) {
+              return 'vendor-http';
+            }
+            return 'vendor-libs';
+          }
+        }
+      }
+    }
   }
 });

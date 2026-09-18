@@ -84,7 +84,7 @@ export default function ReviewerAccessForm() {
       </form>
 
       <div className="tl-access-demo-hint">
-        <span className="tl-hint-label">Hackathon Evaluation Demo Code:</span>
+        <span className="tl-hint-label">Reviewer Passkey:</span>
         <div className="tl-hint-code-row">
           <code>TRUTHLENS-DEMO-2026</code>
           <button

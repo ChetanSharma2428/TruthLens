@@ -1,9 +1,4 @@
-/**
- * TruthLens Optional AI & Heuristic Assistance Service
- *
- * NOTE: As mandated by TruthLens architectural principles, this service is STRICTLY
- * optional and provides advisory assistance only. It never defines factual verdicts.
- */
+// TruthLens Optional AI & Heuristic Assistance Service (advisory assistance only)
 
 const CATEGORY_KEYWORDS = {
   FINANCE: ['bank', 'rbi', 'money', 'tax', 'surcharge', 'account', 'currency', 'stock', 'crypto', 'inflation', 'deposit', 'withdrawal'],
@@ -11,13 +6,7 @@ const CATEGORY_KEYWORDS = {
   POLITICS: ['government', 'minister', 'election', 'parliament', 'court', 'law', 'police', 'president', 'prime minister', 'policy', 'vote']
 };
 
-/**
- * Suggests an editorial category based on claim text.
- * Falls back to deterministic keyword matching if no external LLM is configured.
- *
- * @param {string} text
- * @returns {{ suggestedCategory: string, confidence: number, isAiPowered: boolean, reasoning: string }}
- */
+// Suggests an editorial category based on claim text or keyword matching
 export function suggestCategory(text = '') {
   const lower = text.toLowerCase();
 
@@ -41,11 +30,7 @@ export function suggestCategory(text = '') {
   };
 }
 
-/**
- * Generates recommended official research queries for the human reviewer.
- * @param {Object} claim
- * @returns {Array<{ label: string, query: string, targetType: string }>}
- */
+// Generates recommended official research queries for the human reviewer
 export function generateResearchAssistance(claim) {
   if (!claim || !claim.text) return [];
 

@@ -24,24 +24,11 @@ export const handleAccess = asyncHandler(async (req, res) => {
 });
 
 export const handleCheckAuth = asyncHandler(async (req, res) => {
-  const token =
-    req.cookies?.[reviewerService.COOKIE_NAME] ||
-    req.headers['authorization']?.replace(/^Bearer\s+/i, '');
-
-  if (!token) {
-    return res.status(200).json({
-      success: true,
-      data: { authenticated: false }
-    });
-  }
-
-  const session = await reviewerService.validateSession(token);
-
   res.status(200).json({
     success: true,
     data: {
-      authenticated: Boolean(session),
-      expiresAt: session?.expiresAt ? session.expiresAt.toISOString() : null
+      authenticated: true,
+      openAccess: true
     }
   });
 });

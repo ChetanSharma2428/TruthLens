@@ -7,11 +7,7 @@ const SESSION_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 export const COOKIE_NAME = 'truthlens_reviewer_session';
 
-/**
- * Validates reviewer access code and establishes a temporary session.
- * @param {string} code
- * @returns {Promise<{ rawToken: string, expiresAt: Date }>}
- */
+// Validates reviewer access code and establishes a temporary session
 export async function authenticateReviewer(code) {
   if (!code || typeof code !== 'string') {
     throw new AppError('Reviewer access code is required.', 400, 'VALIDATION_ERROR');
@@ -47,11 +43,7 @@ export async function authenticateReviewer(code) {
   };
 }
 
-/**
- * Validates an existing session token.
- * @param {string} rawToken
- * @returns {Promise<Object>}
- */
+// Validates an existing session token
 export async function validateSession(rawToken) {
   if (!rawToken || typeof rawToken !== 'string') {
     return null;
@@ -66,10 +58,7 @@ export async function validateSession(rawToken) {
   return session;
 }
 
-/**
- * Destroys a reviewer session.
- * @param {string} rawToken
- */
+// Destroys a reviewer session
 export async function destroySession(rawToken) {
   if (!rawToken) return;
   const sessionTokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');

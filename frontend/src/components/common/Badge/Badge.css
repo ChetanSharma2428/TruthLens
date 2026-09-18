@@ -2,13 +2,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-mono);
-  font-weight: 600;
+  font-family: var(--font-sans);
+  font-weight: 700;
   text-transform: uppercase;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-pill);
   line-height: 1;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   white-space: nowrap;
+  gap: 4px;
 }
 
 /* Sizes */

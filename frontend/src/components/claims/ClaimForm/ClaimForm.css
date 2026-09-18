@@ -244,50 +244,7 @@
   text-decoration: underline;
 }
 
-/* OCR Screenshot Intake */
-.tl-ocr-intake-zone {
-  background-color: var(--bg-page);
-  border: 1px dashed var(--border-default);
-  border-radius: var(--radius-sm);
-  padding: var(--space-4);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.tl-ocr-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-
-.tl-ocr-title {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-}
-
-.tl-ocr-upload-btn {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--color-brand);
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-default);
-  padding: 0.25rem 0.6rem;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.tl-ocr-upload-btn:hover:not(:disabled) {
-  border-color: var(--color-brand);
-  background-color: var(--bg-subtle);
-}
+/* OCR Screenshot Intake Preview Bar */
 
 .tl-ocr-preview-bar {
   display: flex;
@@ -461,4 +418,175 @@
   object-fit: cover;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-default);
+}
+
+/* Platform Pills Selector (Image 2 - Screen 3) */
+.tl-platform-pills-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.tl-platform-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.95rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #334155;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.tl-platform-pill-btn:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.tl-platform-pill-btn.selected {
+  background: #eff6ff;
+  border-color: #0066ff;
+  color: #0066ff;
+  box-shadow: 0 0 0 2px rgba(0, 102, 255, 0.15);
+}
+
+.tl-platform-pill-icon {
+  font-size: 1rem;
+}
+
+/* Screenshot Dropzone (Image 2 - Screen 3) */
+.tl-dropzone-box {
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tl-dropzone-box:hover {
+  border-color: #0066ff;
+  background: #eff6ff;
+}
+
+.tl-dropzone-box.dragging {
+  border-color: #0066ff;
+  background: #dbeafe;
+  transform: scale(1.01);
+}
+
+.tl-dropzone-box.uploading {
+  opacity: 0.75;
+  cursor: wait;
+}
+
+.tl-ocr-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-top: 0.2rem;
+}
+
+.tl-ocr-reupload-btn {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.tl-ocr-reupload-btn:hover:not(:disabled) {
+  color: var(--color-brand);
+}
+
+.tl-dropzone-icon-wrap {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: #eff6ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0066ff;
+  margin-bottom: 0.25rem;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.tl-dropzone-box:hover .tl-dropzone-icon-wrap {
+  transform: translateY(-2px);
+  background: #dbeafe;
+}
+
+.tl-spin {
+  animation: tlSpin 0.9s linear infinite;
+}
+
+@keyframes tlSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.tl-dropzone-main {
+  font-size: 0.9375rem;
+  color: #334155;
+  margin: 0;
+}
+
+.tl-dropzone-link {
+  color: #0066ff;
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+.tl-dropzone-sub {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.tl-submit-main-btn {
+  width: 100%;
+  font-size: 1.05rem;
+  padding: 0.85rem;
+  border-radius: var(--radius-md);
+}
+
+.tl-submit-btn-inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+}
+
+@media (max-width: 480px) {
+  .tl-claim-form {
+    padding: 1.25rem 1rem;
+    border-radius: 12px;
+  }
+
+  .tl-platform-pills-selector {
+    gap: 0.5rem;
+  }
+
+  .tl-platform-pill-btn {
+    flex: 1 1 calc(50% - 0.5rem);
+    justify-content: center;
+    padding: 0.45rem 0.5rem;
+    font-size: 0.8125rem;
+  }
+
+  .tl-dropzone-box {
+    padding: 1.5rem 0.75rem;
+  }
 }

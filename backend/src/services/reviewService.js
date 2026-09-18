@@ -1,19 +1,9 @@
 import mongoose from 'mongoose';
 import { Claim } from '../models/Claim.js';
 import { AppError } from '../utils/AppError.js';
-import { cacheGet, cacheSet, cacheDel } from '../config/redis.js';
+import { cacheGet, cacheSet, cacheDel, cacheDelPattern } from '../config/redis.js';
 
-/**
- * Retrieves all claims pending reviewer verification (status = UNVERIFIED),
- * supporting category filtering and priority queue ordering.
- * Default ordering is 'priority' (High Risk claims first, then newest).
- *
- * @param {Object} [params]
- * @param {string} [params.category] - Filter by category (POLITICS, HEALTH, etc.)
- * @param {string} [params.sort] - 'priority' | 'newest' | 'oldest'
- * @param {string} [params.reviewerSessionId]
- * @returns {Promise<{ pendingCount: number, claims: Array }>}
- */
+// Retrieves all claims pending reviewer verification with priority ordering
 export async function getPendingClaims({
   category = 'ALL',
   sort = 'priority',
@@ -32,18 +22,20 @@ export async function getPendingClaims({
     sortOption = { submittedAt: 1 };
   }
 
-  const claims = await Claim.find(query).sort(sortOption);
+  const claims = await Claim.find(query).sort(sortOption).limit(100).lean();
 
   // Check active collision locks for queue items
   const claimsWithLockStatus = await Promise.all(
-    claims.map(async (claim) => {
-      const lockKey = `claim:lock:${claim.id}`;
+    claims.map(async (rawClaim) => {
+      const claimId = rawClaim._id.toString();
+      const lockKey = `claim:lock:${claimId}`;
       const lockHolder = await cacheGet(lockKey);
       const isLocked = Boolean(lockHolder);
       const isLockedByMe = lockHolder === reviewerSessionId;
 
       return {
-        ...claim.toJSON(),
+        ...rawClaim,
+        id: claimId,
         activeLock: isLocked ? {
           isLocked: true,
           isLockedByMe,
@@ -59,14 +51,7 @@ export async function getPendingClaims({
   };
 }
 
-/**
- * Acquires a collaborative triage lock on a claim for 10 minutes.
- * Prevents newsroom collisions when multiple fact-checkers review simultaneously.
- *
- * @param {string} claimId
- * @param {string} reviewerSessionId
- * @returns {Promise<{ locked: boolean, lockedByOther: boolean }>}
- */
+// Acquires a collaborative triage lock on a claim for 10 minutes to prevent collisions
 export async function acquireReviewLock(claimId, reviewerSessionId) {
   if (!reviewerSessionId) return { locked: false, lockedByOther: false };
 
@@ -82,13 +67,7 @@ export async function acquireReviewLock(claimId, reviewerSessionId) {
   return { locked: true, lockedByOther: false };
 }
 
-/**
- * Releases a triage lock.
- *
- * @param {string} claimId
- * @param {string} reviewerSessionId
- * @returns {Promise<boolean>}
- */
+// Releases a triage lock
 export async function releaseReviewLock(claimId, reviewerSessionId) {
   const lockKey = `claim:lock:${claimId}`;
   const existingHolder = await cacheGet(lockKey);
@@ -100,20 +79,7 @@ export async function releaseReviewLock(claimId, reviewerSessionId) {
   return false;
 }
 
-/**
- * Records an authoritative human reviewer verdict, explanation note,
- * and optional official evidence link on a claim.
- * Enforces valid status transition from UNVERIFIED only.
- * Core claim text is immutable (DP3).
- *
- * @param {Object} params
- * @param {string} params.claimId
- * @param {string} params.verdict - 'VERIFIED_TRUE' | 'FALSE' | 'MISLEADING'
- * @param {string} params.note - Reviewer explanation
- * @param {string|null} [params.evidenceUrl] - Official evidence reference URL
- * @param {string} params.reviewerSessionId - ID of authenticated reviewer session
- * @returns {Promise<Object>} The updated claim
- */
+// Records an authoritative human reviewer verdict, note, and evidence link on a claim
 export async function submitReview({ claimId, verdict, note, evidenceUrl = null, reviewerSessionId }) {
   if (!mongoose.Types.ObjectId.isValid(claimId)) {
     throw new AppError(`Invalid claim ID format: '${claimId}'`, 400, 'INVALID_ID');
@@ -141,9 +107,13 @@ export async function submitReview({ claimId, verdict, note, evidenceUrl = null,
 
   await claim.save();
 
-  // Clean up collision lock and detail cache
-  await cacheDel(`claim:lock:${claimId}`);
-  await cacheDel(`claim:detail:${claimId}`);
+  // Clean up collision lock and detail cache, and invalidate public feeds & stats
+  await Promise.all([
+    cacheDel(`claim:lock:${claimId}`),
+    cacheDel(`claim:detail:${claimId}`),
+    cacheDelPattern('feed:*'),
+    cacheDel('truthlens:platform_stats')
+  ]).catch(() => {});
 
   return claim;
 }
