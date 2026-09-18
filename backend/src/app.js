@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import { env } from './config/env.js';
 import claimRoutes from './routes/claimRoutes.js';
+import reviewerRoutes from './routes/reviewerRoutes.js';
 import { notFoundHandler, errorHandler } from './middleware/errorMiddleware.js';
 
 const app = express();
@@ -57,6 +58,7 @@ app.get('/api/health', (req, res) => {
 
 // Mounted API Routes
 app.use('/api/claims', claimRoutes);
+app.use('/api/reviewer', reviewerRoutes);
 
 // 404 & Central Error Handling
 app.use(notFoundHandler);

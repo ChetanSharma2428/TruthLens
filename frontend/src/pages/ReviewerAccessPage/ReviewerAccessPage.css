@@ -1,0 +1,36 @@
+.tl-reviewer-access-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.tl-access-main {
+  flex: 1;
+  padding: var(--space-12) 0 var(--space-16);
+  display: flex;
+  align-items: center;
+}
+
+.tl-access-container {
+  width: 100%;
+  max-width: var(--max-width-content);
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
+
+.tl-access-back {
+  max-width: 480px;
+  margin: 0 auto var(--space-6);
+}
+
+.tl-access-back a {
+  font-size: 0.8125rem;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  transition: color var(--transition-fast);
+}
+
+.tl-access-back a:hover {
+  color: var(--text-primary);
+}
