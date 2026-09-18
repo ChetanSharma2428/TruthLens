@@ -1,270 +1,256 @@
-# TruthLens — API Specification
+# TruthLens — Authoritative REST API Specification
 
-## Important Contract Rule
+All endpoints follow standard REST conventions, responding with uniform envelope formats and standard HTTP status codes.
 
-The Track 2 standard API supplied by the hackathon is authoritative for grader-facing APIs. The endpoints below are the proposed application API and must be reconciled against that standard contract before implementation.
+Base URL: `/api`
 
-## 1. API Conventions
+---
 
-Base:
+## 1. Response Envelope Formats
 
-```text
-/api
-```
-
-JSON requests and responses.
-
-Suggested success:
-
+### Standard Success Response
 ```json
 {
   "success": true,
-  "data": {}
+  "data": { ... }
 }
 ```
 
-Suggested error:
-
+### Standard Error Response
 ```json
 {
   "success": false,
   "error": {
     "code": "VALIDATION_ERROR",
-    "message": "Claim text is required."
+    "message": "Human-readable explanation of error."
   }
 }
 ```
 
-## 2. Create Claim
-
-### POST `/api/claims`
-
-Request:
-
-```json
-{
-  "text": "A viral claim...",
-  "platform": "WHATSAPP",
-  "category": "FINANCE",
-  "sourceUrl": "https://example.com/post"
-}
-```
-
-Backend:
-
-1. Validate.
-2. Run risk analyzer.
-3. Calculate risk level.
-4. Set status to `UNVERIFIED`.
-5. Save.
-6. Return created claim.
-
-The client cannot choose:
-
-- status
-- flags
-- risk level
-- submittedAt
-- reviewedAt
-
-## 3. Public Feed
-
-### GET `/api/claims`
-
-Suggested query parameters:
-
-```text
-category=FINANCE
-status=FALSE
-sort=newest
-page=1
-limit=20
-```
-
-`ALL` means that corresponding filter is not applied.
-
-Response should provide fields required by the feed card.
-
-## 4. Claim Details
-
-### GET `/api/claims/:id`
-
-Returns:
-
-- Full text.
-- Platform.
-- Category.
-- Source URL.
-- Flags.
-- Risk level.
-- Status.
-- Reviewer note.
-- Submission time.
-- Review time.
-
-## 5. Reviewer Access
-
-### POST `/api/reviewer/access`
-
-Request:
-
-```json
-{
-  "code": "demo-reviewer-code"
-}
-```
-
-Backend compares against a server-side value.
-
-Success:
-
-- Does not return the secret code.
-- Establishes temporary reviewer access.
-- Sets HTTP-only cookie.
-
-Failure:
-
-```text
-401 Unauthorized
-```
-
-### GET `/api/reviewer/me`
-
-Optional endpoint to check current reviewer access.
-
-### POST `/api/reviewer/logout`
-
-Clears/revokes reviewer access.
-
-## 6. Reviewer Queue
-
-### GET `/api/reviews/pending`
-
-Requires reviewer access.
-
-Returns unverified claims.
-
-## 7. Submit Review
-
-### POST `/api/reviews/:claimId`
-
-Request:
-
-```json
-{
-  "verdict": "FALSE",
-  "note": "No official source supports this claim."
-}
-```
-
-Backend verifies:
-
-- reviewer access.
-- claim exists.
-- claim is unverified.
-- verdict is allowed.
-- note is valid.
-
-Then stores:
-
-```text
-status
-reviewerNote
-reviewedAt
-reviewerSessionId
-```
-
-## 8. HTTP Status Codes
-
-```text
-200 OK
-201 Created
-400 Bad Request
-401 Unauthorized
-404 Not Found
-409 Conflict
-422 Unprocessable Entity
-429 Too Many Requests
-500 Internal Server Error
-```
-
-## 9. Risk Analyzer
-
-Internal service:
-
-```js
-analyzeRisk({
-  text,
-  sourceUrl
-})
-```
-
-Returns:
-
-```js
-{
-  flags: [],
-  riskLevel: "NORMAL"
-}
-```
-
-The exact flag calculation must follow the hackathon brief.
-
-## 10. API Security
-
-Public endpoints:
-
-```text
-GET /claims
-GET /claims/:id
-POST /claims
-```
-
-Reviewer endpoints require reviewer access:
-
-```text
-GET /reviews/pending
-POST /reviews/:claimId
-POST /reviewer/logout
-```
-
-Never trust client-provided:
-
-```text
-flags
-riskLevel
-status
-reviewedAt
-reviewerSessionId
-```
-
-## 11. Pagination
-
-Initial design:
-
-```text
-page
-limit
-```
-
-If the standard API specifies a different pagination format, follow that contract.
-
-## 12. UI/API Mapping
-
-```text
-Landing
-    ↓
-Public Feed → GET /claims
-    ↓
-Submit → POST /claims
-    ↓
-Details → GET /claims/:id
-
-Reviewer
-    ↓
-Access → POST /reviewer/access
-    ↓
-Queue → GET /reviews/pending
-    ↓
-Review → POST /reviews/:claimId
-```
+---
+
+## 2. Public Claims Endpoints
+
+### 1. Submit a Claim
+* **Method & Route:** `POST /api/claims`
+* **Access:** Public
+* **Request Body:**
+  ```json
+  {
+    "text": "BREAKING: Central bank freezes transfers! Share before deleted!",
+    "platform": "WHATSAPP",
+    "category": "FINANCE",
+    "sourceUrl": "https://example.com/post",
+    "imageUrl": "https://res.cloudinary.com/.../screenshot.png"
+  }
+  ```
+* **Response:** `201 Created`
+  ```json
+  {
+    "success": true,
+    "data": {
+      "id": "66ea1a2b3c4d5e6f7a8b9c0d",
+      "text": "BREAKING: Central bank freezes transfers! Share before deleted!",
+      "platform": "WHATSAPP",
+      "category": "FINANCE",
+      "sourceUrl": "https://example.com/post",
+      "imageUrl": "https://res.cloudinary.com/.../screenshot.png",
+      "flags": ["SENSATIONAL"],
+      "riskLevel": "NORMAL",
+      "riskMetrics": {
+        "uppercaseRatio": 0.15,
+        "uppercasePercent": 15,
+        "detectedKeywords": ["breaking", "share before deleted"],
+        "hasSource": true,
+        "riskScore": 1
+      },
+      "status": "UNVERIFIED",
+      "submittedAt": "2026-09-18T20:00:00.000Z"
+    }
+  }
+  ```
+
+### 2. Get Public Claims Feed
+* **Method & Route:** `GET /api/claims`
+* **Access:** Public
+* **Query Parameters:**
+  * `category`: `ALL` (default), `POLITICS`, `HEALTH`, `FINANCE`, `OTHER`
+  * `status`: `ALL` (default), `UNVERIFIED`, `VERIFIED_TRUE`, `FALSE`, `MISLEADING`
+  * `sort` (DP1): `newest` (default), `highest_risk`, `status`, `oldest`
+  * `visibility` (DP2): `ALL` (default), `VERIFIED_ONLY`
+  * `search`: Keyword string matching claim text and reviewer notes
+  * `page`: Integer (default: 1)
+  * `limit`: Integer (default: 20, max: 100)
+* **Response:** `200 OK`
+  ```json
+  {
+    "success": true,
+    "data": {
+      "claims": [ ... ],
+      "pagination": {
+        "total": 42,
+        "page": 1,
+        "limit": 20,
+        "totalPages": 3,
+        "hasMore": true
+      },
+      "decisionPoints": {
+        "dp1_feedOrder": "newest",
+        "dp2_visibility": "ALL"
+      },
+      "fromCache": false
+    }
+  }
+  ```
+
+### 3. Get Claim by ID (Detail View)
+* **Method & Route:** `GET /api/claims/:id`
+* **Access:** Public
+* **Response:** `200 OK`
+  ```json
+  {
+    "success": true,
+    "data": {
+      "id": "66ea1a2b3c4d5e6f7a8b9c0d",
+      "text": "...",
+      "platform": "X",
+      "category": "POLITICS",
+      "status": "FALSE",
+      "flags": ["SENSATIONAL", "UNSOURCED"],
+      "riskLevel": "HIGH",
+      "riskMetrics": { ... },
+      "reviewerNote": "Official government gazette contradicts this claim.",
+      "evidenceUrl": "https://pib.gov.in/factcheck/...",
+      "submittedAt": "2026-09-18T18:00:00.000Z",
+      "reviewedAt": "2026-09-18T19:30:00.000Z",
+      "auditTimeline": [ ... ],
+      "relatedClaims": [ ... ]
+    }
+  }
+  ```
+
+### 4. Multimodal Screenshot OCR
+* **Method & Route:** `POST /api/claims/extract-from-image`
+* **Access:** Public
+* **Payload:** `multipart/form-data` with field `screenshot` (PNG/JPG/WEBP $\le 5$MB)
+* **Response:** `200 OK`
+  ```json
+  {
+    "success": true,
+    "data": {
+      "extractedText": "Claim text extracted from screenshot via Gemini Vision",
+      "suggestedCategory": "POLITICS",
+      "imageUrl": "https://res.cloudinary.com/.../screenshot.png"
+    }
+  }
+  ```
+
+### 5. Semantic Duplicate Detection
+* **Method & Route:** `POST /api/claims/check-duplicate`
+* **Access:** Public
+* **Payload:** `{ "text": "Claim text to check" }`
+* **Response:** `200 OK`
+  ```json
+  {
+    "success": true,
+    "data": {
+      "isDuplicate": true,
+      "similarity": 0.89,
+      "duplicateClaim": { "id": "...", "text": "...", "status": "..." }
+    }
+  }
+  ```
+
+### 6. Suggest Category (AI/Heuristic)
+* **Method & Route:** `POST /api/claims/suggest-category`
+* **Access:** Public
+* **Payload:** `{ "text": "Claim text" }`
+* **Response:** `200 OK` (`{ "success": true, "data": { "category": "HEALTH" } }`)
+
+### 7. Analyze Risk (Deterministic Engine with Redis Cache)
+* **Method & Route:** `POST /api/claims/analyze-risk`
+* **Access:** Public
+* **Payload:** `{ "text": "...", "sourceUrl": "..." }`
+* **Response:** `200 OK`
+  ```json
+  {
+    "success": true,
+    "data": {
+      "flags": ["SENSATIONAL", "UNSOURCED"],
+      "riskLevel": "HIGH",
+      "metrics": {
+        "uppercaseRatio": 0.22,
+        "uppercasePercent": 22,
+        "detectedKeywords": ["breaking"],
+        "hasSource": false,
+        "riskScore": 2
+      },
+      "fromCache": false
+    }
+  }
+  ```
+
+---
+
+## 3. Reviewer Authentication Endpoints
+
+### 8. Authenticate Reviewer
+* **Method & Route:** `POST /api/reviewer/access`
+* **Payload:** `{ "code": "TRUTHLENS-DEMO-2026" }`
+* **Response:** `200 OK` + `Set-Cookie: truthlens_reviewer_token=...; HttpOnly; SameSite=Lax; Path=/`
+
+### 9. Verify Session
+* **Method & Route:** `GET /api/reviewer/me`
+* **Access:** Public / Cookie
+* **Response:** `200 OK` (`{ "success": true, "data": { "authenticated": true } }`)
+
+### 10. Logout Reviewer
+* **Method & Route:** `POST /api/reviewer/logout`
+* **Response:** `200 OK` (Clears session cookie)
+
+---
+
+## 4. Reviewer Workflow Endpoints (Requires Cookie Auth)
+
+### 11. Get Pending Claims Queue
+* **Method & Route:** `GET /api/reviews/pending`
+* **Query Parameters:**
+  * `category`: `ALL`, `POLITICS`, `HEALTH`, `FINANCE`, `OTHER`
+  * `sort`: `priority` (High risk first - default), `newest`, `oldest`
+* **Response:** `200 OK` (`{ "success": true, "data": { "pendingCount": 12, "claims": [ ... ] } }`)
+
+### 12. Acquire Collaborative Review Lock
+* **Method & Route:** `POST /api/reviews/:claimId/lock`
+* **Response:** `200 OK` (`{ "success": true, "data": { "locked": true, "lockedByOther": false } }`)
+
+### 13. Release Review Lock
+* **Method & Route:** `POST /api/reviews/:claimId/unlock`
+* **Response:** `200 OK` (`{ "success": true, "data": { "released": true } }`)
+
+### 14. Advisory Research Assistance
+* **Method & Route:** `GET /api/reviews/:claimId/research-assistance`
+* **Response:** `200 OK`
+  ```json
+  {
+    "success": true,
+    "data": {
+      "claimId": "...",
+      "assistance": [
+        { "label": "Official Health Source Query", "query": "site:who.int ...", "targetType": "Global Health" }
+      ],
+      "cached": false
+    }
+  }
+  ```
+
+### 15. Submit Verification Verdict
+* **Method & Route:** `POST /api/reviews/:claimId`
+* **Payload:**
+  ```json
+  {
+    "verdict": "FALSE",
+    "note": "Official press release published by the Ministry confirms this claim is entirely fabricated.",
+    "evidenceUrl": "https://pib.gov.in/factcheck/press-release-1234"
+  }
+  ```
+* **Response:** `200 OK` (Returns updated claim)

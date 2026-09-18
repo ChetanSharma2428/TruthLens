@@ -1,258 +1,40 @@
-# TruthLens — Project Rules
+# TruthLens — Project Rules & Architectural Invariants
 
-These rules govern implementation so the project remains consistent, testable, realistic, and aligned with the hackathon requirements.
+These strict rules govern the TruthLens codebase, ensuring audit integrity, security, and adherence to civic tech principles.
 
-## 1. Product Rules
+---
 
-1. TruthLens is a misinformation triage and review platform.
-2. Do not describe risk flags as proof that a claim is false.
-3. Every new claim starts as `UNVERIFIED`.
-4. Only the reviewer workflow can set the factual verdict.
-5. Reviewer verdicts must include a short note.
-6. The core submitted claim is immutable after submission.
-7. Unverified claims are visibly labeled when shown publicly.
-8. Public visitors do not need accounts.
+## 1. Core Civic Tech Rules
 
-## 2. Risk Rules
+1. **Risk $\neq$ Truth:** Automated risk flags (`Sensational`, `Shouting`, `Unsourced`) indicate viral dissemination patterns, **never** factual truth. A factual report can be shouted; a fabricated hoax can be written in calm, polite language.
+2. **Authoritative Human-in-the-Loop:** Automated engines or AI models must **never** assign or override factual verdicts (`Verified True`, `False`, `Misleading`). Factual determinations belong exclusively to human editorial review.
+3. **Transparent Triage (DP2):** Unverified claims are shown publicly by default with distinct amber warning badges so that viral rumors are not allowed to fester in an information vacuum.
+4. **Permanent Immutability (DP3):** Once submitted, core claim content (`text`, `platform`, `category`, `sourceUrl`, `imageUrl`) is permanently immutable. Reviewer decisions evaluate exact text at a specific moment in time; corrections must be filed as distinct new submissions.
+5. **Mandatory Explanatory Notes:** Human reviewers cannot assign a verdict without a clear explanation note ($\ge 5$ characters) citing evidence.
 
-1. Implement the required risk rules deterministically.
-2. Do not use AI to replace required deterministic behavior.
-3. Sensational:
-   - `breaking`
-   - `shocking`
-   - `share before deleted`
-4. Shouting:
-   - more than 50% CAPS according to the implemented rule.
-5. Unsourced:
-   - no source link.
-6. Two or more flags:
-   - High Risk.
-7. Risk is independent of the factual verdict.
+---
 
-## 3. Reviewer Rules
+## 2. Security & Authentication Invariants
 
-1. Reviewer access must be protected on the backend.
-2. Never trust the frontend to identify itself as a reviewer.
-3. Never put the reviewer access code in frontend source.
-4. Store secrets in environment variables.
-5. Review endpoints must reject requests without valid reviewer access.
-6. The reviewer cannot silently change the claim text.
-7. Review notes must be validated.
-8. Review timestamps are generated server-side.
+1. **Server-Side Authority:** The backend is the sole authority for flags, risk level, status, timestamps, and reviewer attribution. The client cannot supply authoritative values for these fields.
+2. **Reviewer Session Protection:** Reviewer access is authenticated via server-side verification of `REVIEWER_ACCESS_CODE` and protected with signed, HTTP-only, SameSite cookies.
+3. **No Secrets in Bundles:** `REVIEWER_ACCESS_CODE`, database URIs, and API keys must never appear in frontend source code.
+4. **Input Sanitization:** All text inputs are trimmed and bounded ($5\text{–}1000$ characters). Image uploads are restricted to memory buffers $\le 5$MB with MIME-type validation.
 
-## 4. API Rules
+---
 
-1. Backend is the source of truth.
-2. Validate all external input.
-3. Never accept client-supplied flags as authoritative.
-4. Never accept client-supplied risk level as authoritative.
-5. Never accept client-supplied reviewer timestamps.
-6. Return consistent response structures.
-7. Use appropriate HTTP status codes.
-8. Handle missing resources explicitly.
-9. Keep API logic aligned with the Track 2 standard API contract.
+## 3. Modern Architecture & Fallback Rules
 
-## 5. Architecture Rules
+1. **100% Graceful Fallback:** External cloud services (Google Gemini API, Cloudinary CDN, Redis) must feature automated, non-crashing fallbacks:
+   * If Redis is unavailable, the application transparently operates using an in-memory `Map` cache.
+   * If Cloudinary or Gemini API keys are omitted, the application logs a clean warning and operates with local fallbacks without throwing 500 errors.
+2. **Dual-Review Collision Locks:** Fact-checkers must acquire collaborative locks when reviewing claims to prevent redundant work in multi-user newsrooms.
+3. **Deterministic Heuristic Integrity:** Deterministic heuristic rules are unit-tested and must never be altered by machine learning inference or prompt instability.
 
-Use:
+---
 
-```text
-Route
- ↓
-Middleware
- ↓
-Controller
- ↓
-Service
- ↓
-Model
-```
+## 4. Frontend Engineering Standards
 
-Controllers should orchestrate, not contain large business algorithms.
-
-Risk calculation belongs in a service.
-
-Database operations belong in services/models as appropriate.
-
-## 6. Frontend Rules
-
-1. React components should be focused and reusable.
-2. Each component gets its own CSS file.
-3. Avoid a giant global stylesheet.
-4. Keep API calls out of purely presentational components where practical.
-5. Handle loading, success, error, and empty states.
-6. Never expose secrets in client code.
-7. Use semantic HTML and accessible form labels.
-8. Do not hide important status information behind color only.
-
-## 7. CSS Rules
-
-Required pattern:
-
-```text
-Component/
-├── Component.jsx
-└── Component.css
-```
-
-Global CSS is reserved for:
-
-- Base/reset.
-- Typography defaults.
-- Design tokens.
-- Global accessibility helpers.
-
-Do not duplicate the same component's CSS across page files.
-
-## 8. Design Rules
-
-TruthLens must not look "vibecoded."
-
-Avoid:
-
-- Excessive gradients.
-- Neon effects.
-- Excessive glassmorphism.
-- Generic AI robot imagery.
-- Fake statistics.
-- Excessive pill-shaped UI.
-- Unnecessary animations.
-
-Prefer:
-
-- Editorial hierarchy.
-- Clear information density.
-- Restrained color.
-- Strong typography.
-- Consistent spacing.
-- Meaningful interaction.
-- Professional empty/error states.
-
-## 9. Data Rules
-
-1. Store timestamps in a consistent server-side format.
-2. Use MongoDB indexes only for real query needs.
-3. Keep the Claim document understandable.
-4. Do not create collections merely to make the architecture look complex.
-5. Preserve the original submitted claim.
-
-## 10. Error Handling Rules
-
-Every API should handle:
-
-- Invalid input.
-- Missing resources.
-- Unauthorized reviewer action.
-- Database failure.
-- Unexpected server errors.
-
-The frontend must turn API errors into useful user-facing messages.
-
-## 11. Security Rules
-
-Minimum:
-
-- Helmet.
-- Restricted CORS.
-- Rate limiting.
-- Input validation.
-- HTTP-only reviewer cookie.
-- Production secure-cookie configuration.
-- Environment variables for secrets.
-- No secrets committed to GitHub.
-
-## 12. AI Rules
-
-If AI is added:
-
-1. AI must solve a real product problem.
-2. AI is an assistant, not the final factual authority.
-3. The required risk engine remains deterministic.
-4. AI failure must not break mandatory features.
-5. AI API keys remain server-side.
-6. Explain AI-assisted outputs clearly in the UI.
-
-## 13. Development Rules
-
-Build in this order:
-
-```text
-Product contract
- ↓
-Database
- ↓
-Backend foundation
- ↓
-Risk engine
- ↓
-Claim APIs
- ↓
-Public UI
- ↓
-Reviewer access
- ↓
-Review workflow
- ↓
-Polish
- ↓
-Optional AI
- ↓
-Testing
- ↓
-Deployment
-```
-
-Do not build optional features before the five mandatory features work.
-
-## 14. Git Rules
-
-Use meaningful commits, for example:
-
-```text
-feat: add claim model
-feat: implement risk analyzer
-feat: add public claims feed
-feat: add reviewer access
-feat: implement review workflow
-fix: correct uppercase risk calculation
-style: refine claim card layout
-```
-
-Do not commit:
-
-```text
-.env
-API keys
-database credentials
-reviewer secrets
-```
-
-## 15. Hackathon Rules
-
-Before submission verify:
-
-- Public URL works.
-- GitHub repository is public if required.
-- README contains the Hackathon ID.
-- README explains setup.
-- README includes test/demo reviewer credentials.
-- All five required features work.
-- DECISIONS.md covers all three Decision Points.
-- Standard API implementation status is stated.
-- Demo recording is 3–4 minutes.
-- Demo walks through all five features in order.
-
-## 16. Final Quality Rule
-
-Do not add complexity just to make the code look advanced.
-
-A smaller system that is:
-
-- correct,
-- reliable,
-- understandable,
-- polished,
-- testable,
-- and aligned with the contract
-
-is preferable to a larger system full of unnecessary features.
+1. **Component-Level CSS Rule:** Every React component must have its own directory containing its dedicated stylesheet (`Component/Component.jsx` + `Component/Component.css`). Monolithic styles or utility-framework overrides are strictly prohibited.
+2. **Accessibility & Semantics:** All interactive elements must have accessible labels (`aria-label`, `role`), distinct focus rings, and readable contrast ratios matching WCAG 2.1 AA standards.
+3. **Entity Escaping:** In JSX text nodes, write `&gt;` and `&lt;` instead of raw angle brackets to prevent bundle compilation errors.
