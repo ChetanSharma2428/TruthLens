@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Button from '../../common/Button/Button';
 import RiskFlags from '../../claims/RiskFlags/RiskFlags';
 import StatusBadge from '../../claims/StatusBadge/StatusBadge';
-import { submitClaimReview } from '../../../services/reviewerService';
+import { submitClaimReview, fetchResearchAssistance } from '../../../services/reviewerService';
 import './ReviewPanel.css';
 
 export default function ReviewPanel({ claim, onReviewSuccess, onClose }) {
@@ -10,6 +10,9 @@ export default function ReviewPanel({ claim, onReviewSuccess, onClose }) {
   const [note, setNote] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const [researchQueries, setResearchQueries] = useState([]);
+  const [loadingQueries, setLoadingQueries] = useState(false);
+  const [showResearch, setShowResearch] = useState(false);
 
   if (!claim) return null;
 
@@ -116,6 +119,69 @@ export default function ReviewPanel({ claim, onReviewSuccess, onClose }) {
           <p className="tl-risk-reminder">
             Automated signals measure viral urgency patterns. Factual truth is determined by your investigation below.
           </p>
+        </div>
+
+        {/* OPTIONAL ASSISTANCE: Fact-Checking Research Queries */}
+        <div className="tl-panel-section tl-research-assistance-section">
+          <div className="tl-assistance-header">
+            <div className="tl-assistance-title-row">
+              <h3 className="tl-section-heading">✦ Advisory Research Queries</h3>
+              <span className="tl-assistance-tag">Optional AI / Heuristic</span>
+            </div>
+            <button
+              type="button"
+              className="tl-toggle-research-btn"
+              onClick={async () => {
+                if (!showResearch && researchQueries.length === 0) {
+                  try {
+                    setLoadingQueries(true);
+                    const res = await fetchResearchAssistance(claim.id);
+                    setResearchQueries(res.assistance || []);
+                  } catch {
+                    // Non-blocking fallback
+                  } finally {
+                    setLoadingQueries(false);
+                  }
+                }
+                setShowResearch(!showResearch);
+              }}
+            >
+              {showResearch ? 'Hide Queries' : 'Show Suggested Queries'}
+            </button>
+          </div>
+
+          {showResearch && (
+            <div className="tl-research-queries-body">
+              <p className="tl-research-explainer">
+                Recommended search queries to verify official gazettes and primary records before assigning your verdict:
+              </p>
+              {loadingQueries ? (
+                <p className="tl-text-muted">Generating query assistance...</p>
+              ) : (
+                <ul className="tl-research-queries-list">
+                  {researchQueries.map((item, idx) => (
+                    <li key={idx} className="tl-query-item">
+                      <div className="tl-query-label">
+                        <strong>{item.label}</strong>
+                        <span className="tl-query-type">{item.targetType}</span>
+                      </div>
+                      <div className="tl-query-code-row">
+                        <code>{item.query}</code>
+                        <a
+                          href={`https://www.google.com/search?q=${encodeURIComponent(item.query)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="tl-query-search-link"
+                        >
+                          Search ↗
+                        </a>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
         </div>
 
         {/* SECTION 3: Reviewer Decision */}

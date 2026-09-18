@@ -202,3 +202,126 @@
 .tl-submit-verdict-btn {
   flex: 1;
 }
+
+/* Advisory Research Assistance Section */
+.tl-research-assistance-section {
+  background-color: var(--bg-page);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: var(--space-4);
+}
+
+.tl-assistance-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.tl-assistance-title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.tl-assistance-tag {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-default);
+  padding: 0.15rem 0.4rem;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+}
+
+.tl-toggle-research-btn {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-accent);
+  background: transparent;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.tl-toggle-research-btn:hover {
+  color: var(--color-brand);
+}
+
+.tl-research-queries-body {
+  margin-top: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.tl-research-explainer {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.tl-research-queries-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.tl-query-item {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.tl-query-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+}
+
+.tl-query-label strong {
+  color: var(--text-primary);
+}
+
+.tl-query-type {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+}
+
+.tl-query-code-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.tl-query-code-row code {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-brand);
+  background-color: var(--bg-subtle);
+  padding: 0.2rem 0.4rem;
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+  flex: 1;
+}
+
+.tl-query-search-link {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.tl-query-search-link:hover {
+  text-decoration: underline;
+}
