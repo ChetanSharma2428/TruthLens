@@ -1,0 +1,126 @@
+.tl-submit-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.tl-submit-main {
+  flex: 1;
+  padding: var(--space-8) 0 var(--space-16);
+}
+
+.tl-submit-container {
+  max-width: var(--max-width-content);
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
+
+.tl-submit-breadcrumbs {
+  margin-bottom: var(--space-6);
+}
+
+.tl-submit-breadcrumbs a {
+  font-size: 0.8125rem;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  font-weight: 500;
+  transition: color var(--transition-fast);
+}
+
+.tl-submit-breadcrumbs a:hover {
+  color: var(--text-primary);
+}
+
+.tl-submit-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-10);
+  align-items: flex-start;
+}
+
+@media (min-width: 880px) {
+  .tl-submit-layout {
+    grid-template-columns: 1.35fr 0.85fr;
+  }
+}
+
+.tl-submit-header {
+  margin-bottom: var(--space-6);
+}
+
+.tl-submit-kicker {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-1);
+}
+
+.tl-submit-title {
+  font-family: var(--font-serif);
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--space-3);
+}
+
+.tl-submit-lead {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* Sidebar */
+.tl-submit-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.tl-sidebar-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  padding: var(--space-6);
+}
+
+.tl-sidebar-card-subtle {
+  background-color: var(--bg-subtle);
+  border-color: var(--border-subtle);
+}
+
+.tl-sidebar-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--space-3);
+}
+
+.tl-sidebar-steps {
+  padding-left: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.tl-sidebar-steps code {
+  font-family: var(--font-mono);
+  background-color: var(--bg-subtle);
+  padding: 0.1rem 0.3rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+}
+
+.tl-sidebar-text {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  margin: 0;
+}
