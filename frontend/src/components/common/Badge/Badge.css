@@ -1,0 +1,66 @@
+.tl-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  text-transform: uppercase;
+  border-radius: var(--radius-sm);
+  line-height: 1;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+/* Sizes */
+.tl-badge-sm {
+  padding: 0.2rem 0.4rem;
+  font-size: 0.6875rem;
+}
+
+.tl-badge-md {
+  padding: 0.3125rem 0.625rem;
+  font-size: 0.75rem;
+}
+
+/* Variants - Strict Restrained Editorial Palette */
+.tl-badge-status-true {
+  background-color: var(--status-true-bg);
+  color: var(--status-true-text);
+  border: 1px solid var(--status-true-border);
+}
+
+.tl-badge-status-false {
+  background-color: var(--status-false-bg);
+  color: var(--status-false-text);
+  border: 1px solid var(--status-false-border);
+}
+
+.tl-badge-status-misleading {
+  background-color: var(--status-misleading-bg);
+  color: var(--status-misleading-text);
+  border: 1px solid var(--status-misleading-border);
+}
+
+.tl-badge-status-unverified {
+  background-color: var(--status-unverified-bg);
+  color: var(--status-unverified-text);
+  border: 1px solid var(--status-unverified-border);
+}
+
+.tl-badge-risk-high {
+  background-color: var(--risk-high-bg);
+  color: var(--risk-high-text);
+  border: 1px solid var(--risk-high-border);
+}
+
+.tl-badge-risk-normal {
+  background-color: var(--risk-normal-bg);
+  color: var(--risk-normal-text);
+  border: 1px solid var(--risk-normal-border);
+}
+
+.tl-badge-neutral {
+  background-color: var(--bg-subtle);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-default);
+}

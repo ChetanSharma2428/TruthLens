@@ -1,0 +1,45 @@
+.tl-error-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  background-color: var(--status-false-bg);
+  border: 1px solid var(--status-false-border);
+  border-radius: var(--radius-sm);
+  color: var(--status-false-text);
+  margin: var(--space-4) 0;
+}
+
+.tl-error-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  background-color: #fee2e2;
+  color: #991b1b;
+  border-radius: 50%;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+}
+
+.tl-error-body {
+  flex: 1;
+}
+
+.tl-error-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: var(--space-1);
+}
+
+.tl-error-message {
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: #7f1d1d;
+}
+
+.tl-error-action {
+  margin-top: var(--space-3);
+}
