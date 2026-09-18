@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { Claim } from '../models/Claim.js';
 import { analyzeRisk } from './riskAnalyzer.js';
 import { AppError } from '../utils/AppError.js';
+import { cacheGet, cacheSet } from '../config/redis.js';
 
 /**
  * Creates a new claim with authoritative server-calculated risk analysis.
@@ -49,19 +50,46 @@ export async function getClaimsFeed({
   category = 'ALL',
   status = 'ALL',
   sort = 'newest',
+  visibility = 'ALL',
+  search = '',
   page = 1,
   limit = 20
 } = {}) {
+  const normCategory = category ? category.toUpperCase() : 'ALL';
+  const normStatus = status ? status.toUpperCase() : 'ALL';
+  const normVisibility = visibility ? visibility.toUpperCase() : 'ALL';
+  const cleanSearch = (search || '').trim();
+
+  // Try Redis cache first (TTL: 30 seconds for live feeds)
+  const cacheKey = `feed:${normCategory}:${normStatus}:${sort}:${normVisibility}:${cleanSearch}:${page}:${limit}`;
+  const cached = await cacheGet(cacheKey);
+  if (cached) {
+    return {
+      ...cached,
+      fromCache: true
+    };
+  }
+
   const query = {};
 
   // Category filter
-  if (category && category.toUpperCase() !== 'ALL') {
-    query.category = category.toUpperCase();
+  if (normCategory !== 'ALL') {
+    query.category = normCategory;
   }
 
-  // Status filter
-  if (status && status.toUpperCase() !== 'ALL') {
-    query.status = status.toUpperCase();
+  // Status filter & DP2 Visibility
+  if (normStatus !== 'ALL') {
+    query.status = normStatus;
+  } else if (normVisibility === 'VERIFIED_ONLY') {
+    query.status = { $ne: 'UNVERIFIED' };
+  }
+
+  // Keyword search across claim text and reviewer notes
+  if (cleanSearch.length > 0) {
+    query.$or = [
+      { text: { $regex: cleanSearch, $options: 'i' } },
+      { reviewerNote: { $regex: cleanSearch, $options: 'i' } }
+    ];
   }
 
   // DP1 Sort order
@@ -70,6 +98,8 @@ export async function getClaimsFeed({
     sortOption = { submittedAt: 1 };
   } else if (sort === 'highest_risk') {
     sortOption = { riskLevel: 1, submittedAt: -1 }; // 'HIGH' precedes 'NORMAL' alphabetically
+  } else if (sort === 'status') {
+    sortOption = { status: 1, reviewedAt: -1, submittedAt: -1 };
   }
 
   const pageNum = Math.max(1, parseInt(page, 10) || 1);
@@ -83,7 +113,7 @@ export async function getClaimsFeed({
 
   const totalPages = Math.ceil(total / limitNum) || 1;
 
-  return {
+  const result = {
     claims,
     pagination: {
       total,
@@ -91,7 +121,19 @@ export async function getClaimsFeed({
       limit: limitNum,
       totalPages,
       hasMore: pageNum < totalPages
+    },
+    decisionPoints: {
+      dp1_feedOrder: sort,
+      dp2_visibility: normVisibility
     }
+  };
+
+  // Cache feed results for 30 seconds
+  await cacheSet(cacheKey, result, 30);
+
+  return {
+    ...result,
+    fromCache: false
   };
 }
 

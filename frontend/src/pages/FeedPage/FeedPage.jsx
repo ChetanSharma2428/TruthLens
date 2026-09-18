@@ -13,11 +13,23 @@ export default function FeedPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Filter & Sort State (DP1 default: newest first)
+  // Filter, DP1 Sort & DP2 Visibility State
   const [category, setCategory] = useState('ALL');
   const [status, setStatus] = useState('ALL');
-  const [sort, setSort] = useState('newest');
+  const [sort, setSort] = useState('newest'); // DP1: Default newest first
+  const [visibility, setVisibility] = useState('ALL'); // DP2: Default transparent (all claims)
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
+
+  // Debounce search input by 350ms
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const loadClaims = useCallback(async () => {
     try {
@@ -27,6 +39,8 @@ export default function FeedPage() {
         category,
         status,
         sort,
+        visibility,
+        search: debouncedSearch,
         page,
         limit: 10
       });
@@ -37,7 +51,7 @@ export default function FeedPage() {
     } finally {
       setLoading(false);
     }
-  }, [category, status, sort, page]);
+  }, [category, status, sort, visibility, debouncedSearch, page]);
 
   useEffect(() => {
     loadClaims();
@@ -55,6 +69,11 @@ export default function FeedPage() {
 
   const handleSortChange = (newSort) => {
     setSort(newSort);
+    setPage(1);
+  };
+
+  const handleVisibilityChange = (newVisibility) => {
+    setVisibility(newVisibility);
     setPage(1);
   };
 
@@ -83,9 +102,13 @@ export default function FeedPage() {
             selectedCategory={category}
             selectedStatus={status}
             selectedSort={sort}
+            selectedVisibility={visibility}
+            searchQuery={search}
             onCategoryChange={handleCategoryChange}
             onStatusChange={handleStatusChange}
             onSortChange={handleSortChange}
+            onVisibilityChange={handleVisibilityChange}
+            onSearchChange={setSearch}
             totalCount={pagination?.total || 0}
           />
 

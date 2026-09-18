@@ -4,6 +4,8 @@ export async function fetchClaims({
   category = 'ALL',
   status = 'ALL',
   sort = 'newest',
+  visibility = 'ALL',
+  search = '',
   page = 1,
   limit = 20
 } = {}) {
@@ -11,6 +13,8 @@ export async function fetchClaims({
   if (category && category !== 'ALL') params.append('category', category);
   if (status && status !== 'ALL') params.append('status', status);
   if (sort) params.append('sort', sort);
+  if (visibility && visibility !== 'ALL') params.append('visibility', visibility);
+  if (search && search.trim()) params.append('search', search.trim());
   if (page) params.append('page', page);
   if (limit) params.append('limit', limit);
 

@@ -11,12 +11,14 @@ export const handleCreateClaim = asyncHandler(async (req, res) => {
 });
 
 export const handleGetClaims = asyncHandler(async (req, res) => {
-  const { category, status, sort, page, limit } = req.query;
+  const { category, status, sort, visibility, search, page, limit } = req.query;
 
   const result = await claimService.getClaimsFeed({
     category,
     status,
     sort,
+    visibility,
+    search,
     page,
     limit
   });

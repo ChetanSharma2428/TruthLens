@@ -141,4 +141,27 @@ describe('Claim APIs — Integration Tests', () => {
     assert.equal(body.data.metrics.riskScore, 3);
     assert.ok(body.data.metrics.detectedKeywords.length >= 2);
   });
+
+  it('Feature 4: GET /api/claims supports search filtering and decision point visibility', async () => {
+    // 1. Keyword search filter
+    const searchRes = await fetch(`${baseUrl}?search=BREAKING`);
+    assert.equal(searchRes.status, 200);
+    const searchBody = await searchRes.json();
+    assert.equal(searchBody.success, true);
+    assert.ok(Array.isArray(searchBody.data.claims));
+
+    // 2. DP2 Visibility: VERIFIED_ONLY excludes unverified claims
+    const verifiedOnlyRes = await fetch(`${baseUrl}?visibility=VERIFIED_ONLY`);
+    assert.equal(verifiedOnlyRes.status, 200);
+    const verifiedOnlyBody = await verifiedOnlyRes.json();
+    assert.equal(verifiedOnlyBody.success, true);
+    const hasUnverified = verifiedOnlyBody.data.claims.some((c) => c.status === 'UNVERIFIED');
+    assert.equal(hasUnverified, false);
+
+    // 3. Feed caching: second query should return fromCache: true
+    const cachedRes = await fetch(`${baseUrl}?visibility=VERIFIED_ONLY`);
+    assert.equal(cachedRes.status, 200);
+    const cachedBody = await cachedRes.json();
+    assert.equal(cachedBody.data.fromCache, true);
+  });
 });

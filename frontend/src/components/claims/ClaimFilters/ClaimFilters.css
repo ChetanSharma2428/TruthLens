@@ -9,17 +9,27 @@
   gap: var(--space-4);
 }
 
+.tl-filters-top-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
 @media (min-width: 768px) {
-  .tl-filters-panel {
+  .tl-filters-top-row {
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
   }
 }
 
-.tl-filters-header {
+.tl-filters-count-wrap {
   display: flex;
   align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
 }
 
 .tl-filters-count {
@@ -31,6 +41,97 @@
 .tl-filters-count strong {
   color: var(--text-primary);
   font-weight: 700;
+}
+
+.tl-dp-info-btn {
+  background: none;
+  border: none;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-brand);
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-subtle);
+  transition: all 0.15s ease;
+}
+
+.tl-dp-info-btn:hover,
+.tl-dp-info-btn.active {
+  background-color: #f1f5f9;
+  border-color: var(--color-brand);
+}
+
+.tl-search-wrap {
+  flex: 1;
+  max-width: 380px;
+}
+
+.tl-feed-search-input {
+  width: 100%;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8125rem;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  background-color: var(--bg-page);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.tl-feed-search-input:focus {
+  border-color: var(--color-brand);
+}
+
+/* Decision Points Explainer Banner */
+.tl-dp-explainer-banner {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  background-color: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-left: 4px solid var(--color-brand);
+  border-radius: var(--radius-sm);
+  padding: var(--space-4) var(--space-5);
+  animation: tl-fade-in 0.2s ease-out;
+}
+
+@media (min-width: 768px) {
+  .tl-dp-explainer-banner {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.tl-dp-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.tl-dp-badge {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--color-brand);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.tl-dp-item h4 {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.tl-dp-item p {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  margin: 0;
 }
 
 .tl-filters-controls {
@@ -53,6 +154,7 @@
   text-transform: uppercase;
   color: var(--text-muted);
   letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 
 .tl-filter-select {
