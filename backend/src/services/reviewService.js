@@ -141,8 +141,9 @@ export async function submitReview({ claimId, verdict, note, evidenceUrl = null,
 
   await claim.save();
 
-  // Clean up any collision lock
+  // Clean up collision lock and detail cache
   await cacheDel(`claim:lock:${claimId}`);
+  await cacheDel(`claim:detail:${claimId}`);
 
   return claim;
 }

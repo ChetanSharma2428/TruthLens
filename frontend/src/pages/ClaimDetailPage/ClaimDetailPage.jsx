@@ -15,6 +15,8 @@ export default function ClaimDetailPage() {
   const [claim, setClaim] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [copiedCitation, setCopiedCitation] = useState(false);
+  const [showScreenshotModal, setShowScreenshotModal] = useState(false);
 
   useEffect(() => {
     async function loadClaim() {
@@ -61,14 +63,32 @@ export default function ClaimDetailPage() {
     }
   };
 
+  const handleCopyCitation = () => {
+    if (!claim) return;
+    const citationText = `TruthLens Audit Record #${claim.id.slice(-6).toUpperCase()}\nClaim: "${claim.text}"\nStatus: ${claim.status.replace('_', ' ')}\nPlatform: ${claim.platform} | Category: ${claim.category}\nRecord Link: ${window.location.href}`;
+    navigator.clipboard.writeText(citationText);
+    setCopiedCitation(true);
+    setTimeout(() => setCopiedCitation(false), 3000);
+  };
+
   return (
     <div className="tl-detail-page">
       <Navbar />
 
       <main id="main-content" className="tl-detail-main">
         <div className="tl-detail-container">
-          <div className="tl-detail-breadcrumbs">
-            <Link to="/feed">← Back to Claims Feed</Link>
+          <div className="tl-detail-nav-row">
+            <Link to="/feed" className="tl-back-link">← Back to Claims Feed</Link>
+            {claim && (
+              <button
+                type="button"
+                className="tl-share-citation-btn"
+                onClick={handleCopyCitation}
+                aria-label="Copy verification audit citation"
+              >
+                {copiedCitation ? '✓ Citation Copied to Clipboard' : '📋 Copy Audit Citation'}
+              </button>
+            )}
           </div>
 
           {loading && <LoadingSpinner message="Loading claim audit record..." size="lg" />}
@@ -217,9 +237,19 @@ export default function ClaimDetailPage() {
                     <div className="tl-meta-row tl-meta-image-row">
                       <dt>Attached Screenshot:</dt>
                       <dd>
-                        <a href={claim.imageUrl} target="_blank" rel="noopener noreferrer">
-                          <img src={claim.imageUrl} alt="Attached viral screenshot" className="tl-detail-screenshot-thumb" />
-                        </a>
+                        <button
+                          type="button"
+                          className="tl-screenshot-thumb-btn"
+                          onClick={() => setShowScreenshotModal(true)}
+                          title="Click to view full screenshot"
+                        >
+                          <img
+                            src={claim.imageUrl}
+                            alt="Attached viral screenshot"
+                            className="tl-detail-screenshot-thumb"
+                          />
+                          <span className="tl-expand-badge">🔍 Click to Expand</span>
+                        </button>
                       </dd>
                     </div>
                   )}
@@ -230,13 +260,97 @@ export default function ClaimDetailPage() {
                 </dl>
               </section>
 
-              {/* Section 4: Audit & Immutability */}
+              {/* Section 4: Audit Trail Timeline (DP3) */}
+              <section className="tl-detail-section">
+                <h2 className="tl-section-title">Audit Trail & Immutability Record (DP3)</h2>
+                <p className="tl-section-sub">
+                  Immutable chronological provenance record from initial community submission to human editorial verdict.
+                </p>
+
+                <div className="tl-audit-timeline">
+                  {(claim.auditTimeline || [
+                    {
+                      step: 1,
+                      label: 'Community Claim Submitted',
+                      timestamp: claim.submittedAt,
+                      description: `Circulating on ${claim.platform} under category ${claim.category}. Core text permanently immutable.`
+                    },
+                    {
+                      step: 2,
+                      label: 'Deterministic Risk Scan',
+                      timestamp: claim.submittedAt,
+                      description: claim.flags?.length > 0 ? `Active signals: ${claim.flags.join(', ')}` : 'Zero risk signals detected.'
+                    }
+                  ]).map((event, idx) => (
+                    <div key={idx} className="tl-timeline-step">
+                      <div className="tl-timeline-marker">
+                        <span className="tl-step-number">{event.step}</span>
+                        {idx < (claim.auditTimeline?.length || 2) - 1 && <div className="tl-step-line" />}
+                      </div>
+                      <div className="tl-step-content">
+                        <div className="tl-step-header">
+                          <h3 className="tl-step-label">{event.label}</h3>
+                          <time className="tl-step-time">{formatDate(event.timestamp)}</time>
+                        </div>
+                        <p className="tl-step-desc">{event.description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              {/* Section 5: Related Claims in Subject Category */}
+              {claim.relatedClaims && claim.relatedClaims.length > 0 && (
+                <section className="tl-detail-section">
+                  <h2 className="tl-section-title">Related Claims in {claim.category}</h2>
+                  <div className="tl-related-claims-grid">
+                    {claim.relatedClaims.map((rel) => (
+                      <Link key={rel.id || rel._id} to={`/claims/${rel.id || rel._id}`} className="tl-related-claim-card">
+                        <div className="tl-related-top">
+                          <StatusBadge status={rel.status} size="sm" />
+                          <span className="tl-related-platform">{rel.platform}</span>
+                        </div>
+                        <p className="tl-related-text">"{rel.text}"</p>
+                        <span className="tl-related-action">View Audit Record →</span>
+                      </Link>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* Section 6: Editorial Standard Footer */}
               <footer className="tl-detail-audit-footer">
                 <p className="tl-immutability-note">
                   <strong>Editorial Standard (DP3):</strong> Core claim text and initial metadata are permanently immutable post-submission. Corrections must be entered as distinct new submissions to preserve audit integrity.
                 </p>
               </footer>
             </article>
+          )}
+
+          {/* Screenshot Modal Lightbox */}
+          {showScreenshotModal && claim?.imageUrl && (
+            <div
+              className="tl-modal-backdrop"
+              onClick={() => setShowScreenshotModal(false)}
+              role="dialog"
+              aria-modal="true"
+            >
+              <div className="tl-modal-content" onClick={(e) => e.stopPropagation()}>
+                <div className="tl-modal-header">
+                  <span className="tl-modal-title">Submitted Post Screenshot Evidence</span>
+                  <button
+                    type="button"
+                    className="tl-modal-close-btn"
+                    onClick={() => setShowScreenshotModal(false)}
+                  >
+                    ✕
+                  </button>
+                </div>
+                <div className="tl-modal-body">
+                  <img src={claim.imageUrl} alt="Full screenshot view" className="tl-modal-full-img" />
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </main>

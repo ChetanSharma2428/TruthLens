@@ -148,10 +148,70 @@ export async function getClaimById(id) {
     throw new AppError(`Invalid claim ID format: '${id}'`, 400, 'INVALID_ID');
   }
 
+  const cacheKey = `claim:detail:${id}`;
+  const cached = await cacheGet(cacheKey);
+  if (cached) {
+    return {
+      ...cached,
+      fromCache: true
+    };
+  }
+
   const claim = await Claim.findById(id);
   if (!claim) {
     throw new AppError('Claim not found.', 404, 'CLAIM_NOT_FOUND');
   }
 
-  return claim;
+  // Fetch related claims in the same subject category
+  const relatedClaims = await Claim.find({
+    _id: { $ne: claim._id },
+    category: claim.category
+  })
+    .sort({ submittedAt: -1 })
+    .limit(3)
+    .select('text category platform status riskLevel flags submittedAt');
+
+  // Build immutable audit trail timeline (DP3)
+  const auditTimeline = [
+    {
+      step: 1,
+      event: 'CLAIM_SUBMITTED',
+      timestamp: claim.submittedAt,
+      label: 'Community Claim Submitted',
+      description: `Reported circulating on ${claim.platform} under category ${claim.category}. Core text permanently immutable (DP3).`
+    },
+    {
+      step: 2,
+      event: 'RISK_TRIAGED',
+      timestamp: claim.submittedAt,
+      label: 'Deterministic Heuristic Scan',
+      description: claim.flags.length === 0
+        ? 'Zero automated virality flags triggered. Evaluated as Normal Risk.'
+        : `Triggered ${claim.flags.join(', ')} (${claim.riskLevel} Risk triage state).`
+    }
+  ];
+
+  if (claim.status !== 'UNVERIFIED' && claim.reviewedAt) {
+    auditTimeline.push({
+      step: 3,
+      event: 'VERDICT_ASSIGNED',
+      timestamp: claim.reviewedAt,
+      label: 'Human Editorial Verdict',
+      description: `Fact-checker verified claim as ${claim.status.replace('_', ' ')}. ${claim.evidenceUrl ? 'Official evidence citation attached.' : ''}`
+    });
+  }
+
+  const claimData = {
+    ...claim.toJSON(),
+    relatedClaims,
+    auditTimeline
+  };
+
+  // Cache claim detail record for 60 seconds
+  await cacheSet(cacheKey, claimData, 60);
+
+  return {
+    ...claimData,
+    fromCache: false
+  };
 }
