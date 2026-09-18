@@ -4,6 +4,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import { env } from './config/env.js';
+import claimRoutes from './routes/claimRoutes.js';
 import { notFoundHandler, errorHandler } from './middleware/errorMiddleware.js';
 
 const app = express();
@@ -28,8 +29,8 @@ app.use(cookieParser(env.SESSION_SECRET));
 
 // Rate Limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: env.NODE_ENV === 'test' ? 10000 : 300, // relaxed for test/dev
+  windowMs: 15 * 60 * 1000,
+  max: env.NODE_ENV === 'test' ? 10000 : 300,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -54,7 +55,8 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// API Routes will be mounted here in Phase 5 & 6
+// Mounted API Routes
+app.use('/api/claims', claimRoutes);
 
 // 404 & Central Error Handling
 app.use(notFoundHandler);
