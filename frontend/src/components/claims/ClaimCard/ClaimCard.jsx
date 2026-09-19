@@ -30,9 +30,7 @@ function ClaimCard({ claim }) {
     switch (plat?.toUpperCase()) {
       case 'WHATSAPP': return '💬';
       case 'X': return '𝕏';
-      case 'FACEBOOK': return '👤';
       case 'INSTAGRAM': return '📷';
-      case 'YOUTUBE': return '▶️';
       default: return '🌐';
     }
   };
