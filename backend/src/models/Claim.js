@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-export const PLATFORMS = ['WHATSAPP', 'X', 'INSTAGRAM', 'OTHER'];
+export const PLATFORMS = ['WHATSAPP', 'X', 'INSTAGRAM', 'OTHER', 'FACEBOOK', 'YOUTUBE'];
 export const CATEGORIES = ['POLITICS', 'HEALTH', 'FINANCE', 'OTHER'];
 export const STATUSES = ['UNVERIFIED', 'VERIFIED_TRUE', 'FALSE', 'MISLEADING'];
 export const FLAGS = ['SENSATIONAL', 'SHOUTING', 'UNSOURCED'];
@@ -20,7 +20,7 @@ const claimSchema = new mongoose.Schema(
       required: [true, 'Source platform is required'],
       enum: {
         values: PLATFORMS,
-        message: 'Invalid platform. Allowed: WHATSAPP, X, INSTAGRAM, OTHER'
+        message: 'Invalid platform. Allowed: WHATSAPP, X, INSTAGRAM, OTHER, FACEBOOK, YOUTUBE'
       }
     },
     category: {

@@ -73,7 +73,7 @@ Respond ONLY with a valid JSON object matching this schema:
       const parsed = JSON.parse(jsonMatch[0]);
       return {
         text: parsed.text || '',
-        platform: ['WHATSAPP', 'X', 'INSTAGRAM', 'OTHER'].includes(parsed.platform) ? parsed.platform : 'OTHER',
+        platform: ['WHATSAPP', 'X', 'INSTAGRAM', 'OTHER', 'FACEBOOK', 'YOUTUBE'].includes(parsed.platform) ? parsed.platform : 'OTHER',
         category: ['POLITICS', 'HEALTH', 'FINANCE', 'OTHER'].includes(parsed.category) ? parsed.category : 'OTHER',
         isAiPowered: true
       };
