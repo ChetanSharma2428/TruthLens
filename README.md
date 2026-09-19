@@ -4,7 +4,8 @@
 > **Hackathon ID:** `[YOUR_HACKATHON_ID_HERE]` *(Find on your Profile page; replace before submitting)*  
 > **Standard API Implemented:** **YES** *(Implements standard REST API; gradable by test scripts or browser agents)*  
 > **Authentication Policy:** **NO LOGIN / SIGNUP REQUIRED** *(Graders have direct access to all features without creating an account)*  
-> **Live App URL:** `http://localhost:5173` 
+> **Live App URL:** https://truthlens-chetansharma2428.vercel.app  
+> **Live Backend API:** https://truthlens-7e3l.onrender.com  
 
 TruthLens is a civic tech misinformation triage platform built for newsrooms, citizen organizations, and research collectives. Social media moves faster than fact-checkers can; TruthLens is neutral by design, checking information patterns rather than ideologies.
 
