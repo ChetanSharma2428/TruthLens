@@ -13,6 +13,9 @@ import { notFoundHandler, errorHandler } from './middleware/errorMiddleware.js';
 
 const app = express();
 
+// Trust reverse proxy (Render, Cloudflare, AWS) for accurate IP detection
+app.set('trust proxy', 1);
+
 // Payload Compression (gzip / deflate for all JSON responses)
 app.use(compression({ threshold: 0 }));
 
@@ -67,6 +70,7 @@ const limiter = rateLimit({
   max: env.NODE_ENV === 'test' ? 10000 : 300,
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
   message: {
     success: false,
     error: {
