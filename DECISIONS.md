@@ -40,6 +40,7 @@ I have implemented the standard REST API for this track. All 5 core features and
 | `POST` | `/api/claims/suggest-category` | Suggests editorial category based on claim keywords. |
 | `POST` | `/api/claims/analyze-risk` | Evaluates heuristic virality flags and returns risk score. |
 | `GET` | `/api/stats` | Returns live platform metrics and trending topics from database. |
+| `GET` | `/health` | Lightweight service liveness and uptime check for external monitors. |
 
 ### Reviewer Workflow Endpoints (Direct Access — No Login Required)
 | Method | Endpoint | Description (In Brief) |

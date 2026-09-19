@@ -47,6 +47,20 @@ app.use(express.json({ limit: '100kb' }));
 app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 app.use(cookieParser(env.SESSION_SECRET));
 
+// Health Check & Uptime Monitoring Endpoints (bypasses rate limiter so monitors never get throttled)
+app.get(['/health', '/api/health', '/'], (req, res) => {
+  res.status(200).json({
+    success: true,
+    data: {
+      status: 'healthy',
+      service: 'TruthLens API',
+      uptime: Math.floor(process.uptime()),
+      environment: env.NODE_ENV,
+      timestamp: new Date().toISOString()
+    }
+  });
+});
+
 // Rate Limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -63,17 +77,6 @@ const limiter = rateLimit({
 });
 app.use('/api', limiter);
 
-// Health Check Endpoint
-app.get('/api/health', (req, res) => {
-  res.status(200).json({
-    success: true,
-    data: {
-      status: 'healthy',
-      environment: env.NODE_ENV,
-      timestamp: new Date().toISOString()
-    }
-  });
-});
 
 // Client-side / CDN Cache-Control headers for public read-only requests
 app.use((req, res, next) => {
