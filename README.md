@@ -1,7 +1,7 @@
 # TruthLens — Misinformation Triage Platform
 
 > **Hackathon Track:** Civic Tech — A Misinformation Triage Platform  
-> **Hackathon ID:** `AZIS-SFUNVV` *(Find on your Profile page; replace before submitting)*  
+> **Hackathon ID:** `AZIS-SFUNVV`   
 > **Standard API Implemented:** **YES** *(Implements standard REST API; gradable by test scripts or browser agents)*  
 > **Authentication Policy:** **NO LOGIN / SIGNUP REQUIRED** *(Graders have direct access to all features without creating an account)*  
 > **Live App URL:**  truthlens-ylyls07fg-chetansharma2428.vercel.app
