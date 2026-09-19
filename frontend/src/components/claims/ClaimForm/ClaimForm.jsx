@@ -363,9 +363,7 @@ export default function ClaimForm() {
           {[
             { id: 'WHATSAPP', label: 'WhatsApp', icon: '💬' },
             { id: 'X', label: 'X (Twitter)', icon: '𝕏' },
-            { id: 'FACEBOOK', label: 'Facebook', icon: '👤' },
             { id: 'INSTAGRAM', label: 'Instagram', icon: '📷' },
-            { id: 'YOUTUBE', label: 'YouTube', icon: '▶️' },
             { id: 'OTHER', label: 'Other', icon: '🌐' }
           ].map((p) => {
             const isSelected = formData.platform === p.id;

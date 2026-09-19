@@ -36,9 +36,7 @@ export default function ClaimFilters({
     { value: 'ALL', label: 'All Platforms' },
     { value: 'WHATSAPP', label: 'WhatsApp' },
     { value: 'X', label: 'X (Twitter)' },
-    { value: 'FACEBOOK', label: 'Facebook' },
     { value: 'INSTAGRAM', label: 'Instagram' },
-    { value: 'YOUTUBE', label: 'YouTube' },
     { value: 'OTHER', label: 'Other' }
   ];
 
